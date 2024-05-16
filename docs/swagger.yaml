@@ -1,0 +1,50 @@
+basePath: /
+definitions:
+  models.Roman:
+    properties:
+      decimal:
+        type: integer
+      roman:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8001
+info:
+  contact:
+    email: asutosh.satapathy@gmail.com
+    name: Asutosh
+  description: This API takes a range of decimals and converts it to roman numerals
+  title: Roman Numeral Convertor API
+  version: "1.0"
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: do ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: ping example
+      tags:
+      - example
+  /GetRoman:
+    get:
+      description: Get the roman numeral equivalent for a given decimal
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved a Roman
+          schema:
+            $ref: '#/definitions/models.Roman'
+      summary: Get Roman Numeral
+      tags:
+      - romans
+swagger: "2.0"

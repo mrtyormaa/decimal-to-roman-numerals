@@ -1,0 +1,76 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This API takes a range of decimals and converts it to roman numerals",
+        "title": "Roman Numeral Convertor API",
+        "contact": {
+            "name": "Asutosh",
+            "email": "asutosh.satapathy@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8001",
+    "basePath": "/",
+    "paths": {
+        "/": {
+            "get": {
+                "description": "do ping",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "ping example",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/GetRoman": {
+            "get": {
+                "description": "Get the roman numeral equivalent for a given decimal",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "romans"
+                ],
+                "summary": "Get Roman Numeral",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved a Roman",
+                        "schema": {
+                            "$ref": "#/definitions/models.Roman"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Roman": {
+            "type": "object",
+            "properties": {
+                "decimal": {
+                    "type": "integer"
+                },
+                "roman": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
+    }
+}

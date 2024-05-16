@@ -1,22 +1,31 @@
 package main
 
 import (
-	"net/http"
+	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api"
 )
 
+// @title           Roman Numeral Convertor API
+// @version         1.0
+// @description     This API takes a range of decimals and converts it to roman numerals
+
+// @contact.name   Asutosh
+// @contact.email  asutosh.satapathy@gmail.com
+
+// @host      localhost:8001
+// @BasePath  /
+
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 func main() {
-	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "Decimal to Roman Numeral Convertor",
-		})
-	})
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run(":8001") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	//gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
+
+	r := api.InitRouter()
+
+	if err := r.Run(":8001"); err != nil {
+		log.Fatal(err)
+	}
 }

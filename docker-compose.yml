@@ -1,0 +1,12 @@
+version: '1.0'
+services:
+  backend:
+    container_name: decimal-to-roman-numerals
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8001:8001
+    volumes:
+      - .:/app
+    command: go run cmd/server/main.go

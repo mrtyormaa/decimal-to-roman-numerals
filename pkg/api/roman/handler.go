@@ -26,15 +26,36 @@ func Healthcheck(g *gin.Context) {
 // @Success 200 {object} models.RomanNumeral "Successfully retrieved Roman Numerals"
 // @Router /convert [get]
 func ConvertNumbersToRoman(c *gin.Context) {
-
+	// Get the 'numbers' query parameter
 	numbersParam := c.Query("numbers")
 	if numbersParam == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "The 'numbers' query parameter is required."})
 		return
 	}
 
+	// Parse and validate the number list
+	numbers, invalidNumbers := ParseNumberList(numbersParam)
+
+	// If there are any invalid numbers, return an error response
+	if len(invalidNumbers) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":           "Invalid input. Please provide valid integers within the supported range (1-3999).",
+			"invalid_numbers": invalidNumbers,
+		})
+		return
+	}
+
+	// Convert the numbers to Roman numerals
+	results := ConvertNumbersToRomanNumerals(numbers)
+
+	// Return the results as a JSON response
+	c.JSON(http.StatusOK, gin.H{"results": results})
+}
+
+// ParseNumberList parses and validates a comma-separated list of numbers
+func ParseNumberList(numbersParam string) ([]int, []string) {
 	numberStrings := strings.Split(numbersParam, ",")
-	var results []models.RomanNumeral
+	var numbers []int
 	var invalidNumbers []string
 
 	for _, numberString := range numberStrings {
@@ -42,25 +63,35 @@ func ConvertNumbersToRoman(c *gin.Context) {
 		if err != nil || number < 1 || number > 3999 {
 			invalidNumbers = append(invalidNumbers, numberString)
 		} else {
-			roman, _ := converter.Convert(number)
-			results = append(results, models.RomanNumeral{
-				Decimal: uint(number),
-				Roman:   roman,
-			})
+			numbers = append(numbers, number)
 		}
 	}
 
-	if len(invalidNumbers) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input. Please provide valid integers within the supported range (1-3999).", "invalid_numbers": invalidNumbers})
-		return
+	return numbers, invalidNumbers
+}
+
+// ConvertNumbersToRomanNumerals converts a list of unique numbers to their Roman numeral equivalents
+func ConvertNumbersToRomanNumerals(numbers []int) []models.RomanNumeral {
+	uniqueNumbers := make(map[int]struct{})
+	for _, number := range numbers {
+		uniqueNumbers[number] = struct{}{}
 	}
 
-	// Sort the results in ascending order
+	var results []models.RomanNumeral
+	for number := range uniqueNumbers {
+		roman, _ := converter.Convert(number)
+		results = append(results, models.RomanNumeral{
+			Decimal: uint(number),
+			Roman:   roman,
+		})
+	}
+
+	// Sort the results by decimal value in ascending order
 	sort.Slice(results, func(i, j int) bool {
 		return results[i].Decimal < results[j].Decimal
 	})
 
-	c.JSON(http.StatusOK, gin.H{"results": results})
+	return results
 }
 
 // ranges godoc

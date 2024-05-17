@@ -38,6 +38,12 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			expectedResponse: `{"results":[{"number":1,"roman":"I"},{"number":5,"roman":"V"},{"number":10,"roman":"X"}]}`,
 		},
 		{
+			name:             "ValidInput_MultipleUnique",
+			queryParam:       "numbers=1,5,10,5,10,1",
+			expectedStatus:   http.StatusOK,
+			expectedResponse: `{"results":[{"number":1,"roman":"I"},{"number":5,"roman":"V"},{"number":10,"roman":"X"}]}`,
+		},
+		{
 			name:             "InvalidInput_NonNumeric",
 			queryParam:       "numbers=1,abc,10",
 			expectedStatus:   http.StatusBadRequest,
@@ -108,4 +114,89 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestParseNumberList tests the ParseNumberList function
+func TestParseNumberList(t *testing.T) {
+	tests := []struct {
+		input           string
+		expectedValid   []int
+		expectedInvalid []string
+	}{
+		{"1,2,3", []int{1, 2, 3}, []string{}},
+		{"0,4000", []int{}, []string{"0", "4000"}},
+		{"a,1", []int{1}, []string{"a"}},
+		{"1, 2, 3", []int{1, 2, 3}, []string{}},
+		{"10,20,abc,30,40", []int{10, 20, 30, 40}, []string{"abc"}},
+		{"", []int{}, []string{""}},
+		{"1, 3999", []int{1, 3999}, []string{}},
+	}
+
+	for _, test := range tests {
+		valid, invalid := ParseNumberList(test.input)
+		if !equalIntSlices(valid, test.expectedValid) {
+			t.Errorf("ParseNumberList(%q) valid = %v; want %v", test.input, valid, test.expectedValid)
+		}
+		if !equalStringSlices(invalid, test.expectedInvalid) {
+			t.Errorf("ParseNumberList(%q) invalid = %v; want %v", test.input, invalid, test.expectedInvalid)
+		}
+	}
+}
+
+// TestConvertNumbersToRomanNumerals tests the ConvertNumbersToRomanNumerals function
+func TestConvertNumbersToRomanNumerals(t *testing.T) {
+	tests := []struct {
+		input    []int
+		expected []models.RomanNumeral
+	}{
+		{[]int{1, 2, 3}, []models.RomanNumeral{{Decimal: 1, Roman: "I"}, {Decimal: 2, Roman: "II"}, {Decimal: 3, Roman: "III"}}},
+		{[]int{10, 20, 10}, []models.RomanNumeral{{Decimal: 10, Roman: "X"}, {Decimal: 20, Roman: "XX"}}},
+		{[]int{}, []models.RomanNumeral{}},
+		{[]int{3999}, []models.RomanNumeral{{Decimal: 3999, Roman: "MMMCMXCIX"}}},
+	}
+
+	for _, test := range tests {
+		result := ConvertNumbersToRomanNumerals(test.input)
+		if !equalRomanNumeralSlices(result, test.expected) {
+			t.Errorf("ConvertNumbersToRomanNumerals(%v) = %v; want %v", test.input, result, test.expected)
+		}
+	}
+}
+
+// Helper functions to compare slices for testing
+
+func equalIntSlices(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func equalStringSlices(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func equalRomanNumeralSlices(a, b []models.RomanNumeral) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }

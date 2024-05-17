@@ -47,7 +47,7 @@ decimal-to-roman-numerals/
         - **`handler.go`**: HTTP handlers.
         - **`router.go`**: Routes.
     - **`models/`**: Data models.
-    - **`database/`**: Database connection and queries.
+    - **`middleware/`**: Middleware for various functionalities.
 
 4. **`tests/`**: Test cases.
 
@@ -90,7 +90,7 @@ make setup; make build; make up
 
 You can set the environment variables in the `.env` file. Important environment variables will be defined as we progress
 
-### API Documentation
+## API Documentation
 
 The API is documented using Swagger and can be accessed at:
 
@@ -98,16 +98,119 @@ The API is documented using Swagger and can be accessed at:
 http://localhost:8001/swagger/index.html
 ```
 
-## Usage
-
 ### Endpoints
 
-- `GET /`: Health Check.
-- `GET /GetRoman`: Dummy Test Endpoint.
+#### 1. Convert Numbers to Roman Numerals
+
+This endpoint converts a comma-separated list of numbers to their corresponding Roman numeral representations.
+
+- **URL**: `/convert`
+- **Method**: `GET`
+- **Parameters**:
+  - `numbers` (required): Comma-separated list of integers to be converted. Each number must be within the range 1 to 3999.
+- **Example**: `/convert?numbers=10,50,100`
+
+#### Response
+
+- **Status Code**: `200 OK`
+- **Body**: JSON object containing the results.
+  - `results`: An array of objects containing the decimal number and its Roman numeral representation.
+    - `number`: Decimal number.
+    - `roman`: Roman numeral representation.
+
+#### Example
+
+Request:
+```bash
+GET /convert?numbers=10,50,100
+```
+
+Response:
+
+```json
+{
+  "results": [
+    {"number": 10, "roman": "X"},
+    {"number": 50, "roman": "L"},
+    {"number": 100, "roman": "C"}
+  ]
+}
+```
+
+#### 2. Convert Ranges of Numbers to Roman Numerals
+
+This endpoint converts multiple ranges of numbers to their corresponding Roman numeral representations.
+
+- **URL**: `/convert`
+- **Method**: `POST`
+- **Body**: JSON object containing an array of number ranges.
+  - `ranges`: An array of objects specifying number ranges.
+    - `min`: The minimum value of the range (inclusive).
+    - `max`: The maximum value of the range (inclusive).
+- **Example Request**:
+  ```json
+  {
+    "ranges": [
+      {"min": 10, "max": 20},
+      {"min": 50, "max": 55}
+    ]
+  }
+  ```
+
+#### Response
+
+- **Status Code**: `200 OK`
+- **Body**: JSON object containing the results.
+  - `results`: An array of objects containing the decimal number and its Roman numeral representation.
+    - `number`: Decimal number.
+    - `roman`: Roman numeral representation.
+
+#### Example
+
+Request:
+```http
+POST /convert
+Content-Type: application/json
+
+{
+  "ranges": [
+    {"min": 10, "max": 20},
+    {"min": 50, "max": 55}
+  ]
+}
+```
+
+Response:
+
+```json
+{
+  "results": [
+    {"number": 10, "roman": "X"},
+    {"number": 11, "roman": "XI"},
+    {"number": 12, "roman": "XII"},
+    {"number": 13, "roman": "XIII"},
+    {"number": 14, "roman": "XIV"},
+    {"number": 15, "roman": "XV"},
+    {"number": 16, "roman": "XVI"},
+    {"number": 17, "roman": "XVII"},
+    {"number": 18, "roman": "XVIII"},
+    {"number": 19, "roman": "XIX"},
+    {"number": 20, "roman": "XX"},
+    {"number": 50, "roman": "L"},
+    {"number": 51, "roman": "LI"},
+    {"number": 52, "roman": "LII"},
+    {"number": 53, "roman": "LIII"},
+    {"number": 54, "roman": "LIV"},
+    {"number": 55, "roman": "LV"}
+  ]
+}
+```
 
 ## TODOs
 
-- Endpoint Implementations
+- Endpoint Improvements
 - Possibly Authentication!
 - Possible Rate Limiter!
 - Possibly Redis DB support!
+- config file & env file
+- possibly prometheus integration for observability

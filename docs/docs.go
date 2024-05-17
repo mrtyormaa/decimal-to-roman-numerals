@@ -18,32 +18,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
+        "/convert": {
             "get": {
-                "description": "do ping",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "example"
-                ],
-                "summary": "ping example",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/GetRoman": {
-            "get": {
-                "description": "Get the roman numeral equivalent for a given decimal",
+                "description": "Get the roman numeral equivalent for a given decimal(s) in ascending order",
                 "produces": [
                     "application/json"
                 ],
@@ -53,9 +30,29 @@ const docTemplate = `{
                 "summary": "Get Roman Numeral",
                 "responses": {
                     "200": {
-                        "description": "Successfully retrieved a Roman",
+                        "description": "Successfully retrieved Roman Numerals",
                         "schema": {
-                            "$ref": "#/definitions/models.Roman"
+                            "$ref": "#/definitions/models.RomanNumeral"
+                        }
+                    }
+                }
+            }
+        },
+        "/ranges": {
+            "get": {
+                "description": "Get the roman numeral equivalent for given ranges in ascending order",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "romans"
+                ],
+                "summary": "Get Roman Numerals for Ranges of Numbers",
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved Roman Numerals",
+                        "schema": {
+                            "$ref": "#/definitions/models.RomanNumeral"
                         }
                     }
                 }
@@ -63,10 +60,10 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.Roman": {
+        "models.RomanNumeral": {
             "type": "object",
             "properties": {
-                "decimal": {
+                "number": {
                     "type": "integer"
                 },
                 "roman": {

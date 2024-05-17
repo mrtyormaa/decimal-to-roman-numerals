@@ -1,8 +1,8 @@
 basePath: /
 definitions:
-  models.Roman:
+  models.RomanNumeral:
     properties:
-      decimal:
+      number:
         type: integer
       roman:
         type: string
@@ -19,32 +19,32 @@ info:
   title: Roman Numeral Convertor API
   version: "1.0"
 paths:
-  /:
+  /convert:
     get:
-      consumes:
-      - application/json
-      description: do ping
+      description: Get the roman numeral equivalent for a given decimal(s) in ascending
+        order
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved Roman Numerals
           schema:
-            type: string
-      summary: ping example
-      tags:
-      - example
-  /GetRoman:
-    get:
-      description: Get the roman numeral equivalent for a given decimal
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully retrieved a Roman
-          schema:
-            $ref: '#/definitions/models.Roman'
+            $ref: '#/definitions/models.RomanNumeral'
       summary: Get Roman Numeral
+      tags:
+      - romans
+  /ranges:
+    get:
+      description: Get the roman numeral equivalent for given ranges in ascending
+        order
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved Roman Numerals
+          schema:
+            $ref: '#/definitions/models.RomanNumeral'
+      summary: Get Roman Numerals for Ranges of Numbers
       tags:
       - romans
 swagger: "2.0"

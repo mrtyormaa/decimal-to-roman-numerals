@@ -20,11 +20,14 @@ func InitRouter() *gin.Engine {
 	}
 	r.Use(middleware.Cors())
 
-	docs.SwaggerInfo.BasePath = "/"
-	v1 := r.Group("/")
+	version := "/api/v1"
+	docs.SwaggerInfo.BasePath = version
+
+	v1 := r.Group(version)
 	{
 		v1.GET("/", roman.Healthcheck)
-		v1.GET("/GetRoman", roman.GetRoman)
+		v1.GET("/convert", roman.ConvertNumbersToRoman)
+		v1.GET("/ranges", roman.ConvertRangesToRoman)
 
 	}
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

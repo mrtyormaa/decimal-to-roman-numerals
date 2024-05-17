@@ -36,10 +36,8 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/ranges": {
-            "get": {
+            },
+            "post": {
                 "description": "Get the roman numeral equivalent for given ranges in ascending order",
                 "produces": [
                     "application/json"

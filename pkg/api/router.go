@@ -27,7 +27,7 @@ func InitRouter() *gin.Engine {
 	{
 		v1.GET("/", roman.Healthcheck)
 		v1.GET("/convert", roman.ConvertNumbersToRoman)
-		v1.GET("/ranges", roman.ConvertRangesToRoman)
+		v1.POST("/convert", roman.ConvertRangesToRoman)
 
 	}
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

@@ -1,6 +1,7 @@
 package roman
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -199,4 +200,145 @@ func equalRomanNumeralSlices(a, b []models.RomanNumeral) bool {
 		}
 	}
 	return true
+}
+
+// TestProcessRanges tests the ProcessRanges function
+func TestProcessRanges(t *testing.T) {
+	tests := []struct {
+		name          string
+		input         models.RangesPayload
+		expected      []int
+		expectedError string
+	}{
+		{
+			name: "Valid Ranges",
+			input: models.RangesPayload{
+				Ranges: []models.NumberRange{
+					{Min: 1, Max: 5},
+					{Min: 10, Max: 15},
+				},
+			},
+			expected:      []int{1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15},
+			expectedError: "",
+		},
+		{
+			name: "Invalid Range Min Greater Than Max",
+			input: models.RangesPayload{
+				Ranges: []models.NumberRange{
+					{Min: 20, Max: 10},
+				},
+			},
+			expected:      nil,
+			expectedError: "invalid range. each range must be within 1 to 3999 and min should not be greater than max",
+		},
+		{
+			name: "Range Out of Bounds",
+			input: models.RangesPayload{
+				Ranges: []models.NumberRange{
+					{Min: 0, Max: 10},
+				},
+			},
+			expected:      nil,
+			expectedError: "invalid range. each range must be within 1 to 3999 and min should not be greater than max",
+		},
+		{
+			name:          "Empty Ranges",
+			input:         models.RangesPayload{},
+			expected:      []int{},
+			expectedError: "",
+		},
+	}
+
+	for _, test := range tests {
+		result, err := ProcessRanges(test.input)
+		if test.expectedError != "" {
+			if err == nil || err.Error() != test.expectedError {
+				t.Errorf("ProcessRanges(%v) error = %v; want %v", test.input, err, test.expectedError)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("ProcessRanges(%v) unexpected error = %v", test.input, err)
+			}
+			if !equalIntSlices(result, test.expected) {
+				t.Errorf("ProcessRanges(%v) = %v; want %v", test.input, result, test.expected)
+			}
+		}
+	}
+}
+
+// TestConvertRangesToRoman tests the ConvertRangesToRoman handler function
+func TestConvertRangesToRoman(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name          string
+		input         models.RangesPayload
+		expected      []models.RomanNumeral
+		expectedError string
+	}{
+		{
+			name: "Valid Ranges",
+			input: models.RangesPayload{
+				Ranges: []models.NumberRange{
+					{Min: 10, Max: 12},
+					{Min: 15, Max: 15},
+				},
+			},
+			expected: []models.RomanNumeral{
+				{Decimal: 10, Roman: "X"},
+				{Decimal: 11, Roman: "XI"},
+				{Decimal: 12, Roman: "XII"},
+				{Decimal: 15, Roman: "XV"},
+			},
+			expectedError: "",
+		},
+		{
+			name: "Invalid Range",
+			input: models.RangesPayload{
+				Ranges: []models.NumberRange{
+					{Min: 4000, Max: 5000},
+				},
+			},
+			expected:      nil,
+			expectedError: "invalid range. each range must be within 1 to 3999 and min should not be greater than max",
+		},
+	}
+
+	for _, test := range tests {
+		body, _ := json.Marshal(test.input)
+		req, _ := http.NewRequest("POST", "/convert", bytes.NewBuffer(body))
+		w := httptest.NewRecorder()
+
+		r := gin.Default()
+		r.POST("/convert", ConvertRangesToRoman)
+		r.ServeHTTP(w, req)
+
+		if test.expectedError != "" {
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Expected status %v; got %v", http.StatusBadRequest, w.Code)
+			}
+			var response map[string]interface{}
+			json.Unmarshal(w.Body.Bytes(), &response)
+			if response["error"] != test.expectedError {
+				t.Errorf("Expected error %v; got %v", test.expectedError, response["error"])
+			}
+		} else {
+			if w.Code != http.StatusOK {
+				t.Errorf("Expected status %v; got %v", http.StatusOK, w.Code)
+			}
+			var response map[string]interface{}
+			json.Unmarshal(w.Body.Bytes(), &response)
+			var results []models.RomanNumeral
+			for _, r := range response["results"].([]interface{}) {
+				rMap := r.(map[string]interface{})
+				results = append(results, models.RomanNumeral{
+					Decimal: uint(rMap["number"].(float64)),
+					Roman:   rMap["roman"].(string),
+				})
+			}
+			if !equalRomanNumeralSlices(results, test.expected) {
+				t.Errorf("Expected results %v; got %v", test.expected, results)
+			}
+		}
+	}
 }

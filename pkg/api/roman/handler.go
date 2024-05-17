@@ -1,6 +1,7 @@
 package roman
 
 import (
+	"errors"
 	"net/http"
 	"sort"
 	"strconv"
@@ -94,13 +95,48 @@ func ConvertNumbersToRomanNumerals(numbers []int) []models.RomanNumeral {
 	return results
 }
 
-// ranges godoc
+// convert godoc
 // @Summary Get Roman Numerals for Ranges of Numbers
 // @Description Get the roman numeral equivalent for given ranges in ascending order
 // @Tags romans
 // @Produce json
 // @Success 200 {object} models.RomanNumeral "Successfully retrieved Roman Numerals"
-// @Router /ranges [get]
+// @Router /convert [post]
 func ConvertRangesToRoman(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not yet implemented."})
+	var payload models.RangesPayload
+
+	// Bind the JSON payload to the ranges variable
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload."})
+		return
+	}
+
+	// Process the ranges to generate a list of numbers
+	numbers, err := ProcessRanges(payload)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert the numbers to Roman numerals
+	results := ConvertNumbersToRomanNumerals(numbers)
+
+	// Return the results as a JSON response
+	c.JSON(http.StatusOK, gin.H{"results": results})
+}
+
+// ProcessRanges processes the ranges and generates a list of numbers
+func ProcessRanges(payload models.RangesPayload) ([]int, error) {
+	var numbers []int
+
+	for _, r := range payload.Ranges {
+		if r.Min < 1 || r.Max > 3999 || r.Min > r.Max {
+			return nil, errors.New("invalid range. each range must be within 1 to 3999 and min should not be greater than max")
+		}
+		for i := r.Min; i <= r.Max; i++ {
+			numbers = append(numbers, i)
+		}
+	}
+
+	return numbers, nil
 }

@@ -15,6 +15,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestHealthcheck(t *testing.T) {
+	// Create a Gin router
+	router := gin.Default()
+	router.GET("/healthcheck", roman.Healthcheck)
+
+	// Create a request to send to the above route
+	req, _ := http.NewRequest(http.MethodGet, "/healthcheck", nil)
+
+	// Record the response
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	// Check the status code
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Check the response body
+	expectedBody := `{"message":"Decimal to Roman Numerals Converter","status":"success"}`
+	assert.JSONEq(t, expectedBody, w.Body.String())
+}
+
 func TestConvertNumbersToRoman(t *testing.T) {
 	// Create a Gin router
 	router := gin.Default()

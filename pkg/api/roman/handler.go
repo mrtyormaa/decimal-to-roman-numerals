@@ -16,7 +16,11 @@ var converter RomanConverter = &BasicRomanConverter{}
 // @BasePath /
 
 func Healthcheck(g *gin.Context) {
-	g.JSON(http.StatusOK, "Decimal to Roman Numerals Converter")
+	response := gin.H{
+		"status":  "success",
+		"message": "Decimal to Roman Numerals Converter",
+	}
+	g.JSON(http.StatusOK, response)
 }
 
 // ConvertNumbersToRoman handles the API request to convert numbers to Roman numerals.

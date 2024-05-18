@@ -1,12 +1,14 @@
 package roman
 
-import "errors"
+import (
+	"fmt"
+)
 
 type BasicRomanConverter struct{}
 
 func (c *BasicRomanConverter) Convert(num int) (string, error) {
-	if num <= 0 || num >= 4000 {
-		return "", errors.New("input out of bounds, must be between 1 and 3999")
+	if num < LowerLimit || num > UpperLimit {
+		return "", fmt.Errorf("input out of bounds, must be between %d and %d", LowerLimit, UpperLimit)
 	}
 
 	val := []int{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1}

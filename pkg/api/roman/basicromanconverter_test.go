@@ -1,7 +1,7 @@
 package roman_test
 
 import (
-	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api/roman"
@@ -21,8 +21,8 @@ func TestBasicRomanConverter_Convert(t *testing.T) {
 		expected      string
 		expectedError error
 	}{
-		{input: 0, expected: "", expectedError: errors.New("input out of bounds, must be between 1 and 3999")},
-		{input: 4000, expected: "", expectedError: errors.New("input out of bounds, must be between 1 and 3999")},
+		{input: 0, expected: "", expectedError: fmt.Errorf("input out of bounds, must be between %d and %d", roman.LowerLimit, roman.UpperLimit)},
+		{input: 4000, expected: "", expectedError: fmt.Errorf("input out of bounds, must be between %d and %d", roman.LowerLimit, roman.UpperLimit)},
 		{input: 1, expected: "I", expectedError: nil},
 		{input: 3, expected: "III", expectedError: nil},
 		{input: 4, expected: "IV", expectedError: nil},

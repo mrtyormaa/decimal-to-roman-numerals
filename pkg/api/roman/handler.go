@@ -1,7 +1,7 @@
 package roman
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -9,6 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/models"
+)
+
+const (
+	LowerLimit = 1
+	UpperLimit = 3999
 )
 
 var converter RomanConverter = &BasicRomanConverter{}
@@ -59,7 +64,7 @@ func ConvertNumbersToRoman(c *gin.Context) {
 	// If there are any invalid numbers, return an error response
 	if len(invalidNumbers) > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":           "Invalid input. Please provide valid integers within the supported range (1-3999).",
+			"error":           fmt.Sprintf("Invalid input. Please provide valid integers within the supported range (%d-%d).", LowerLimit, UpperLimit),
 			"invalid_numbers": invalidNumbers,
 		})
 		return
@@ -88,7 +93,7 @@ func ParseNumberList(numbersParams []string) ([]int, []string) {
 				continue // Skip empty strings
 			}
 			number, err := strconv.Atoi(numberString)
-			if err != nil || number < 1 || number > 3999 {
+			if err != nil || number < LowerLimit || number > UpperLimit {
 				invalidNumbers = append(invalidNumbers, numberString)
 			} else {
 				numbers = append(numbers, number)
@@ -160,8 +165,8 @@ func ProcessRanges(payload models.RangesPayload) ([]int, error) {
 	var numbers []int
 
 	for _, r := range payload.Ranges {
-		if r.Min < 1 || r.Max > 3999 || r.Min > r.Max {
-			return nil, errors.New("invalid range. each range must be within 1 to 3999 and min should not be greater than max")
+		if r.Min < LowerLimit || r.Max > UpperLimit || r.Min > r.Max {
+			return nil, fmt.Errorf("invalid range. each range must be within %d to %d and min should not be greater than max", LowerLimit, UpperLimit)
 		}
 		for i := r.Min; i <= r.Max; i++ {
 			numbers = append(numbers, i)

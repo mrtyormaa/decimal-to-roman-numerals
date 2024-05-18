@@ -3,6 +3,7 @@ package roman_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -70,19 +71,19 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			name:             "InvalidInput_NonNumeric",
 			queryParam:       "numbers=1,abc,10",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: `{"error":"Invalid input. Please provide valid integers within the supported range (1-3999).","invalid_numbers":["abc"]}`,
+			expectedResponse: fmt.Sprintf(`{"error":"Invalid input. Please provide valid integers within the supported range (%d-%d).","invalid_numbers":["abc"]}`, roman.LowerLimit, roman.UpperLimit),
 		},
 		{
 			name:             "InvalidInput_OutOfRange",
 			queryParam:       "numbers=5000,10000",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: `{"error":"Invalid input. Please provide valid integers within the supported range (1-3999).","invalid_numbers":["5000","10000"]}`,
+			expectedResponse: fmt.Sprintf(`{"error":"Invalid input. Please provide valid integers within the supported range (%d-%d).","invalid_numbers":["5000","10000"]}`, roman.LowerLimit, roman.UpperLimit),
 		},
 		{
 			name:             "InvalidInput_MixedOutOfRange",
 			queryParam:       "numbers=1,3,32,5000,10000",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: `{"error":"Invalid input. Please provide valid integers within the supported range (1-3999).","invalid_numbers":["5000","10000"]}`,
+			expectedResponse: fmt.Sprintf(`{"error":"Invalid input. Please provide valid integers within the supported range (%d-%d).","invalid_numbers":["5000","10000"]}`, roman.LowerLimit, roman.UpperLimit),
 		},
 		{
 			name:             "MissingQueryParam_NoParam",
@@ -277,7 +278,7 @@ func TestProcessRanges(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: "invalid range. each range must be within 1 to 3999 and min should not be greater than max",
+			expectedError: fmt.Sprintf("invalid range. each range must be within %d to %d and min should not be greater than max", roman.LowerLimit, roman.UpperLimit),
 		},
 		{
 			name: "Range Out of Bounds",
@@ -287,7 +288,7 @@ func TestProcessRanges(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: "invalid range. each range must be within 1 to 3999 and min should not be greater than max",
+			expectedError: fmt.Sprintf("invalid range. each range must be within %d to %d and min should not be greater than max", roman.LowerLimit, roman.UpperLimit),
 		},
 		{
 			name:          "Empty Ranges",
@@ -348,7 +349,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: "invalid range. each range must be within 1 to 3999 and min should not be greater than max",
+			expectedError: fmt.Sprintf("invalid range. each range must be within %d to %d and min should not be greater than max", roman.LowerLimit, roman.UpperLimit),
 		},
 	}
 

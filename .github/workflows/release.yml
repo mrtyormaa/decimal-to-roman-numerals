@@ -1,0 +1,56 @@
+name: Automated Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.21.10'
+
+      - name: Build and Publish Docker Image
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          docker build -t decimal-to-roman-numerals:${{ github.ref_name }} .
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker push decimal-to-roman-numerals:${{ github.ref_name }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Source Code
+        id: upload-source
+        uses: actions/upload-artifact@v2
+        with:
+          name: source-code
+          path: .
+
+      - name: Attach Source Code to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.upload-source.outputs.artifact_path }}/.
+          asset_name: source-code-${{ github.ref_name }}.zip
+          asset_content_type: application/zip

@@ -33,15 +33,28 @@ func Healthcheck(g *gin.Context) {
 // @Success 200 {object} []models.RomanNumeral
 // @Router /convert [get]
 func ConvertNumbersToRoman(c *gin.Context) {
-	// Get the 'numbers' query parameter
-	numbersParam := c.Query("numbers")
-	if numbersParam == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "The 'numbers' query parameter is required."})
+	// Get all query parameters
+	queryParams := c.Request.URL.Query()
+
+	// Check if there are any query parameters other than 'numbers'
+	for param := range queryParams {
+		if param != "numbers" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Only 'numbers' query parameter is allowed"})
+			return
+		}
+	}
+
+	// Get the numbers parameters from the query string
+	numbersParams := c.QueryArray("numbers")
+
+	// Check if the numbers parameter is missing
+	if len(numbersParams) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "The 'numbers' query parameter is required"})
 		return
 	}
 
 	// Parse and validate the number list
-	numbers, invalidNumbers := ParseNumberList(numbersParam)
+	numbers, invalidNumbers := ParseNumberList(numbersParams)
 
 	// If there are any invalid numbers, return an error response
 	if len(invalidNumbers) > 0 {
@@ -59,18 +72,27 @@ func ConvertNumbersToRoman(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"results": results})
 }
 
-// ParseNumberList parses and validates a comma-separated list of numbers
-func ParseNumberList(numbersParam string) ([]int, []string) {
-	numberStrings := strings.Split(numbersParam, ",")
+// ParseNumberList parses and validates an array of comma-separated list of numbers
+func ParseNumberList(numbersParams []string) ([]int, []string) {
 	var numbers []int
 	var invalidNumbers []string
 
-	for _, numberString := range numberStrings {
-		number, err := strconv.Atoi(strings.TrimSpace(numberString))
-		if err != nil || number < 1 || number > 3999 {
-			invalidNumbers = append(invalidNumbers, numberString)
-		} else {
-			numbers = append(numbers, number)
+	// Iterate over each numbers parameter
+	for _, numbersParam := range numbersParams {
+		numberStrings := strings.Split(numbersParam, ",")
+		for _, numberString := range numberStrings {
+			// Trim spaces
+			numberString = strings.TrimSpace(numberString)
+			if numberString == "" {
+				invalidNumbers = append(invalidNumbers, "")
+				continue // Skip empty strings
+			}
+			number, err := strconv.Atoi(numberString)
+			if err != nil || number < 1 || number > 3999 {
+				invalidNumbers = append(invalidNumbers, numberString)
+			} else {
+				numbers = append(numbers, number)
+			}
 		}
 	}
 

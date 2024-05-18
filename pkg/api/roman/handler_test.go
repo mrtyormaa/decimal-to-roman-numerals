@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"sort"
 	"strings"
 	"testing"
@@ -87,17 +88,23 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			name:             "MissingQueryParam_NoParam",
 			queryParam:       "",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: `{"error":"The 'numbers' query parameter is required."}`,
+			expectedResponse: `{"error":"The 'numbers' query parameter is required"}`,
 		},
 		{
 			name:             "MissingQueryParam_OtherParam",
 			queryParam:       "number=1,2,3",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: `{"error":"The 'numbers' query parameter is required."}`,
+			expectedResponse: `{"error": "Only 'numbers' query parameter is allowed"}`,
 		},
 		{
 			name:             "AscendingOrder",
 			queryParam:       "numbers=100,50,10",
+			expectedStatus:   http.StatusOK,
+			expectedResponse: `{"results":[{"number":10,"roman":"X"},{"number":50,"roman":"L"},{"number":100,"roman":"C"}]}`,
+		},
+		{
+			name:             "MultipleQueryParam_Valid",
+			queryParam:       "numbers=50,10&numbers=100",
 			expectedStatus:   http.StatusOK,
 			expectedResponse: `{"results":[{"number":10,"roman":"X"},{"number":50,"roman":"L"},{"number":100,"roman":"C"}]}`,
 		},
@@ -141,27 +148,59 @@ func TestConvertNumbersToRoman(t *testing.T) {
 // TestParseNumberList tests the ParseNumberList function
 func TestParseNumberList(t *testing.T) {
 	tests := []struct {
-		input           string
-		expectedValid   []int
+		name            string
+		input           []string
+		expectedNumbers []int
 		expectedInvalid []string
 	}{
-		{"1,2,3", []int{1, 2, 3}, []string{}},
-		{"0,4000", []int{}, []string{"0", "4000"}},
-		{"a,1", []int{1}, []string{"a"}},
-		{"1, 2, 3", []int{1, 2, 3}, []string{}},
-		{"10,20,abc,30,40", []int{10, 20, 30, 40}, []string{"abc"}},
-		{"", []int{}, []string{""}},
-		{"1, 3999", []int{1, 3999}, []string{}},
+		{
+			name:            "Valid list of numbers",
+			input:           []string{"1,2,3", "4", "5,6,7,8"},
+			expectedNumbers: []int{1, 2, 3, 4, 5, 6, 7, 8},
+			expectedInvalid: nil,
+		},
+		{
+			name:            "Numbers out of range",
+			input:           []string{"0, 4000, 5000"},
+			expectedNumbers: nil,
+			expectedInvalid: []string{"0", "4000", "5000"},
+		},
+		{
+			name:            "Non-numeric strings",
+			input:           []string{"a, b, c"},
+			expectedNumbers: nil,
+			expectedInvalid: []string{"a", "b", "c"},
+		},
+		{
+			name:            "Empty strings",
+			input:           []string{"", "1,,2", "  "},
+			expectedNumbers: []int{1, 2},
+			expectedInvalid: []string{"", "", ""},
+		},
+		{
+			name:            "Mixed valid and invalid entries",
+			input:           []string{"1, abc, 2", "4000, 3"},
+			expectedNumbers: []int{1, 2, 3},
+			expectedInvalid: []string{"abc", "4000"},
+		},
+		{
+			name:            "Multiple input arrays",
+			input:           []string{"1, 2", "3, 4", "5"},
+			expectedNumbers: []int{1, 2, 3, 4, 5},
+			expectedInvalid: nil,
+		},
 	}
 
-	for _, test := range tests {
-		valid, invalid := roman.ParseNumberList(test.input)
-		if !equalIntSlices(valid, test.expectedValid) {
-			t.Errorf("ParseNumberList(%q) valid = %v; want %v", test.input, valid, test.expectedValid)
-		}
-		if !equalStringSlices(invalid, test.expectedInvalid) {
-			t.Errorf("ParseNumberList(%q) invalid = %v; want %v", test.input, invalid, test.expectedInvalid)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			numbers, invalidNumbers := roman.ParseNumberList(tt.input)
+			if !reflect.DeepEqual(numbers, tt.expectedNumbers) {
+				t.Errorf("expected numbers %v, got %v", tt.expectedNumbers, numbers)
+			}
+			if !reflect.DeepEqual(invalidNumbers, tt.expectedInvalid) {
+				t.Errorf("expected invalid numbers %v, got %v", tt.expectedInvalid, invalidNumbers)
+			}
+		})
 	}
 }
 
@@ -188,18 +227,6 @@ func TestConvertNumbersToRomanNumerals(t *testing.T) {
 // Helper functions to compare slices for testing
 
 func equalIntSlices(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func equalStringSlices(a, b []string) bool {
 	if len(a) != len(b) {
 		return false
 	}

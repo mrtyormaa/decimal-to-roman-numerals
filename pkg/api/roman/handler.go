@@ -13,11 +13,6 @@ import (
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/models"
 )
 
-const (
-	LowerLimit = 1
-	UpperLimit = 3999
-)
-
 var converter RomanConverter = &BasicRomanConverter{}
 
 // @BasePath /
@@ -46,7 +41,7 @@ func ConvertNumbersToRoman(c *gin.Context) {
 	// Check if there are any query parameters other than 'numbers'
 	for param := range queryParams {
 		if param != "numbers" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Only 'numbers' query parameter is allowed"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidParam})
 			return
 		}
 	}
@@ -56,7 +51,7 @@ func ConvertNumbersToRoman(c *gin.Context) {
 
 	// Check if the numbers parameter is missing
 	if len(numbersParams) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "The 'numbers' query parameter is required"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": ErrMissingNumbersParam})
 		return
 	}
 
@@ -66,7 +61,7 @@ func ConvertNumbersToRoman(c *gin.Context) {
 	// If there are any invalid numbers, return an error response
 	if len(invalidNumbers) > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":           fmt.Sprintf("Invalid input. Please provide valid integers within the supported range (%d-%d).", LowerLimit, UpperLimit),
+			"error":           fmt.Sprintf(ErrInvalidInput, LowerLimit, UpperLimit),
 			"invalid_numbers": invalidNumbers,
 		})
 		return
@@ -145,26 +140,26 @@ func ConvertRangesToRoman(c *gin.Context) {
 	// Read the raw request body
 	rawBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read request body"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": ErrFailedReadBody})
 		return
 	}
 
 	// Unmarshal the raw body into a map
 	if err := json.Unmarshal(rawBody, &payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload."})
+		c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidJSONPayload})
 		return
 	}
 
 	// Check if the payload contains exactly one key "ranges" and the value is an array
 	rangesData, ok := payload["ranges"].([]interface{})
 	if !ok || len(payload) != 1 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload. Expected only 'ranges' key with an array value."})
+		c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidRangesPayload})
 		return
 	}
 
 	// If "ranges" array is empty, return an empty result
 	if len(rangesData) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Empty 'ranges'. Provide valid min and max values for the ranges."})
+		c.JSON(http.StatusBadRequest, gin.H{"error": ErrEmptyRanges})
 		return
 	}
 
@@ -196,7 +191,7 @@ func ProcessRanges(payload models.RangesPayload) ([]int, error) {
 
 	for _, r := range payload.Ranges {
 		if r.Min < LowerLimit || r.Max > UpperLimit || r.Min > r.Max {
-			return nil, fmt.Errorf("invalid range. each range must be within %d to %d and min should not be greater than max", LowerLimit, UpperLimit)
+			return nil, fmt.Errorf(ErrInvalidRange, LowerLimit, UpperLimit)
 		}
 		for i := r.Min; i <= r.Max; i++ {
 			numbers = append(numbers, i)

@@ -42,6 +42,8 @@ func TestConvertNumbersToRoman(t *testing.T) {
 	router := gin.Default()
 	router.GET("/convert", roman.ConvertNumbersToRoman)
 
+	errInvalidInput := fmt.Sprintf(roman.ErrInvalidInput, roman.LowerLimit, roman.UpperLimit)
+
 	// Test cases
 	testCases := []struct {
 		name             string
@@ -71,31 +73,31 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			name:             "InvalidInput_NonNumeric",
 			queryParam:       "numbers=1,abc,10",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error":"Invalid input. Please provide valid integers within the supported range (%d-%d).","invalid_numbers":["abc"]}`, roman.LowerLimit, roman.UpperLimit),
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["abc"]}`, errInvalidInput),
 		},
 		{
 			name:             "InvalidInput_OutOfRange",
 			queryParam:       "numbers=5000,10000",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error":"Invalid input. Please provide valid integers within the supported range (%d-%d).","invalid_numbers":["5000","10000"]}`, roman.LowerLimit, roman.UpperLimit),
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, errInvalidInput),
 		},
 		{
 			name:             "InvalidInput_MixedOutOfRange",
 			queryParam:       "numbers=1,3,32,5000,10000",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error":"Invalid input. Please provide valid integers within the supported range (%d-%d).","invalid_numbers":["5000","10000"]}`, roman.LowerLimit, roman.UpperLimit),
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, errInvalidInput),
 		},
 		{
 			name:             "MissingQueryParam_NoParam",
 			queryParam:       "",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: `{"error":"The 'numbers' query parameter is required"}`,
+			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.ErrMissingNumbersParam),
 		},
 		{
 			name:             "MissingQueryParam_OtherParam",
 			queryParam:       "number=1,2,3",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: `{"error": "Only 'numbers' query parameter is allowed"}`,
+			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.ErrInvalidParam),
 		},
 		{
 			name:             "AscendingOrder",
@@ -155,37 +157,37 @@ func TestParseNumberList(t *testing.T) {
 		expectedInvalid []string
 	}{
 		{
-			name:            "Valid list of numbers",
+			name:            "ValidNumbers",
 			input:           []string{"1,2,3", "4", "5,6,7,8"},
 			expectedNumbers: []int{1, 2, 3, 4, 5, 6, 7, 8},
 			expectedInvalid: nil,
 		},
 		{
-			name:            "Numbers out of range",
+			name:            "NumbersOutOfRange",
 			input:           []string{"0, 4000, 5000"},
 			expectedNumbers: nil,
 			expectedInvalid: []string{"0", "4000", "5000"},
 		},
 		{
-			name:            "Non-numeric strings",
+			name:            "Non-numericStrings",
 			input:           []string{"a, b, c"},
 			expectedNumbers: nil,
 			expectedInvalid: []string{"a", "b", "c"},
 		},
 		{
-			name:            "Empty strings",
+			name:            "EmptyStrings",
 			input:           []string{"", "1,,2", "  "},
 			expectedNumbers: []int{1, 2},
 			expectedInvalid: []string{"", "", ""},
 		},
 		{
-			name:            "Mixed valid and invalid entries",
+			name:            "MixedInvalidEntries",
 			input:           []string{"1, abc, 2", "4000, 3"},
 			expectedNumbers: []int{1, 2, 3},
 			expectedInvalid: []string{"abc", "4000"},
 		},
 		{
-			name:            "Multiple input arrays",
+			name:            "MultipleInputArrays",
 			input:           []string{"1, 2", "3, 4", "5"},
 			expectedNumbers: []int{1, 2, 3, 4, 5},
 			expectedInvalid: nil,
@@ -278,7 +280,7 @@ func TestProcessRanges(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: fmt.Sprintf("invalid range. each range must be within %d to %d and min should not be greater than max", roman.LowerLimit, roman.UpperLimit),
+			expectedError: fmt.Sprintf(roman.ErrInvalidRange, roman.LowerLimit, roman.UpperLimit),
 		},
 		{
 			name: "InvalidRanges_OutOfBounds",
@@ -288,7 +290,7 @@ func TestProcessRanges(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: fmt.Sprintf("invalid range. each range must be within %d to %d and min should not be greater than max", roman.LowerLimit, roman.UpperLimit),
+			expectedError: fmt.Sprintf(roman.ErrInvalidRange, roman.LowerLimit, roman.UpperLimit),
 		},
 		{
 			name:          "ValidRanges_EmptyRange",
@@ -364,7 +366,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 				Ranges: []models.NumberRange{},
 			},
 			expected:      nil,
-			expectedError: "Empty 'ranges'. Provide valid min and max values for the ranges.",
+			expectedError: roman.ErrEmptyRanges,
 		},
 		{
 			name: "InvalidRange_OutOfBounds",
@@ -374,13 +376,13 @@ func TestConvertRangesToRoman(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: fmt.Sprintf("invalid range. each range must be within %d to %d and min should not be greater than max", roman.LowerLimit, roman.UpperLimit),
+			expectedError: fmt.Sprintf(roman.ErrInvalidRange, roman.LowerLimit, roman.UpperLimit),
 		},
 		{
 			name:          "InvalidJSON",
 			input:         "invalid json",
 			expected:      nil,
-			expectedError: "Invalid JSON payload.",
+			expectedError: roman.ErrInvalidJSONPayload,
 		},
 		{
 			name: "MissingRangesKey",
@@ -390,7 +392,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: "Invalid JSON payload. Expected only 'ranges' key with an array value.",
+			expectedError: roman.ErrInvalidRangesPayload,
 		},
 		{
 			name: "MissingRangesKey_ExtraKeys",
@@ -401,7 +403,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 				"extra": "value",
 			},
 			expected:      nil,
-			expectedError: "Invalid JSON payload. Expected only 'ranges' key with an array value.",
+			expectedError: roman.ErrInvalidRangesPayload,
 		},
 		{
 			name: "ValidRanges_OverlappingRanges",

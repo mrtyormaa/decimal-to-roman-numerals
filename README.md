@@ -206,6 +206,36 @@ Response:
 }
 ```
 
+## Logging And Monitoring
+
+Docker compose handles the integration of prometheus and grafana instances using the provided config files.
+
+### 1. Prometheus
+
+To expose Prometheus metrics in a Go application, we have provided a `/metrics` HTTP endpoint. We can view all the exposed metrics via this url `http://localhost:8080/metrics`
+
+The prometheus instance can be accessed via the following url:
+
+```http
+http://localhost:9090
+```
+
+### 2. Grafana
+
+This project has grafana integration for visualisation of the metrics . The grfana url is as follows with login and password both being `admin`:
+
+```http
+http://localhost:3000
+```
+
+There are two dashboards included. The `Gin Application Metrics` dashboard captures various statistics like total requests, request rates, status code distribution etc. 
+
+[![apistats.png](https://i.postimg.cc/vHnR15Nv/Screenshot-2024-05-18-230423.png)](https://postimg.cc/HVTvR8HJ)
+
+The second dashboard covers various go statistics.
+
+[![gostats.png](https://i.postimg.cc/wMSSfB7J/gostats.png)](https://postimg.cc/9wY8zCPF)
+
 ## TODOs
 
 - Endpoint Improvements
@@ -213,4 +243,3 @@ Response:
 - Possible Rate Limiter!
 - Possibly Redis DB support!
 - config file & env file
-- possibly prometheus integration for observability

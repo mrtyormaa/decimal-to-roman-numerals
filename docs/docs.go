@@ -20,37 +20,65 @@ const docTemplate = `{
     "paths": {
         "/convert": {
             "get": {
-                "description": "Get the roman numeral equivalent for a given decimal(s) in ascending order",
+                "description": "Convert a comma-separated list of numbers to their corresponding Roman numeral representations.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "romans"
+                "summary": "Convert numbers to Roman numerals",
+                "operationId": "convertNumbersToRoman",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of integers to be converted",
+                        "name": "numbers",
+                        "in": "query",
+                        "required": true
+                    }
                 ],
-                "summary": "Get Roman Numeral",
                 "responses": {
                     "200": {
-                        "description": "Successfully retrieved Roman Numerals",
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.RomanNumeral"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.RomanNumeral"
+                            }
                         }
                     }
                 }
             },
             "post": {
-                "description": "Get the roman numeral equivalent for given ranges in ascending order",
+                "description": "Convert multiple ranges of numbers to their corresponding Roman numeral representations.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
-                "tags": [
-                    "romans"
+                "summary": "Convert ranges of numbers to Roman numerals",
+                "operationId": "convertRangesToRoman",
+                "parameters": [
+                    {
+                        "description": "Array of number ranges",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RangesPayload"
+                        }
+                    }
                 ],
-                "summary": "Get Roman Numerals for Ranges of Numbers",
                 "responses": {
                     "200": {
-                        "description": "Successfully retrieved Roman Numerals",
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.RomanNumeral"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.RomanNumeral"
+                            }
                         }
                     }
                 }
@@ -58,6 +86,39 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.NumberRange": {
+            "type": "object",
+            "required": [
+                "max",
+                "min"
+            ],
+            "properties": {
+                "max": {
+                    "description": "The maximum value of the range (inclusive).",
+                    "type": "integer",
+                    "example": 20
+                },
+                "min": {
+                    "description": "The minimum value of the range (inclusive).",
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
+        "models.RangesPayload": {
+            "type": "object",
+            "required": [
+                "ranges"
+            ],
+            "properties": {
+                "ranges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.NumberRange"
+                    }
+                }
+            }
+        },
         "models.RomanNumeral": {
             "type": "object",
             "properties": {
@@ -80,9 +141,9 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8001",
-	BasePath:         "/",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "Roman Numeral Convertor API",
+	Title:            "Roman Numeral Converter API",
 	Description:      "This API takes a range of decimals and converts it to roman numerals",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

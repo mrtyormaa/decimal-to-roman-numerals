@@ -19,12 +19,14 @@ func Healthcheck(g *gin.Context) {
 	g.JSON(http.StatusOK, "Decimal to Roman Numeral Converter")
 }
 
-// convert godoc
-// @Summary Get Roman Numeral
-// @Description Get the roman numeral equivalent for a given decimal(s) in ascending order
-// @Tags romans
+// ConvertNumbersToRoman handles the API request to convert numbers to Roman numerals.
+// @Summary Convert numbers to Roman numerals
+// @Description Convert a comma-separated list of numbers to their corresponding Roman numeral representations.
+// @ID convertNumbersToRoman
+// @Accept json
 // @Produce json
-// @Success 200 {object} models.RomanNumeral "Successfully retrieved Roman Numerals"
+// @Param numbers query string true "Comma-separated list of integers to be converted"
+// @Success 200 {object} []models.RomanNumeral
 // @Router /convert [get]
 func ConvertNumbersToRoman(c *gin.Context) {
 	// Get the 'numbers' query parameter
@@ -95,12 +97,14 @@ func ConvertNumbersToRomanNumerals(numbers []int) []models.RomanNumeral {
 	return results
 }
 
-// convert godoc
-// @Summary Get Roman Numerals for Ranges of Numbers
-// @Description Get the roman numeral equivalent for given ranges in ascending order
-// @Tags romans
+// ConvertRangesToRoman handles the API request to convert ranges of numbers to Roman numerals.
+// @Summary Convert ranges of numbers to Roman numerals
+// @Description Convert multiple ranges of numbers to their corresponding Roman numeral representations.
+// @ID convertRangesToRoman
+// @Accept json
 // @Produce json
-// @Success 200 {object} models.RomanNumeral "Successfully retrieved Roman Numerals"
+// @Param input body models.RangesPayload true "Array of number ranges"
+// @Success 200 {object} []models.RomanNumeral
 // @Router /convert [post]
 func ConvertRangesToRoman(c *gin.Context) {
 	var payload models.RangesPayload

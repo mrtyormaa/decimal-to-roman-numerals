@@ -9,4 +9,4 @@ services:
       - 8001:8001
     volumes:
       - .:/app
-    command: go run cmd/server/main.go
+    command: go run main.go

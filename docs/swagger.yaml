@@ -1,5 +1,28 @@
-basePath: /
+basePath: /api/v1
 definitions:
+  models.NumberRange:
+    properties:
+      max:
+        description: The maximum value of the range (inclusive).
+        example: 20
+        type: integer
+      min:
+        description: The minimum value of the range (inclusive).
+        example: 10
+        type: integer
+    required:
+    - max
+    - min
+    type: object
+  models.RangesPayload:
+    properties:
+      ranges:
+        items:
+          $ref: '#/definitions/models.NumberRange'
+        type: array
+    required:
+    - ranges
+    type: object
   models.RomanNumeral:
     properties:
       number:
@@ -16,34 +39,53 @@ info:
     email: asutosh.satapathy@gmail.com
     name: Asutosh
   description: This API takes a range of decimals and converts it to roman numerals
-  title: Roman Numeral Convertor API
+  title: Roman Numeral Converter API
   version: "1.0"
 paths:
   /convert:
     get:
-      description: Get the roman numeral equivalent for a given decimal(s) in ascending
-        order
+      consumes:
+      - application/json
+      description: Convert a comma-separated list of numbers to their corresponding
+        Roman numeral representations.
+      operationId: convertNumbersToRoman
+      parameters:
+      - description: Comma-separated list of integers to be converted
+        in: query
+        name: numbers
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: Successfully retrieved Roman Numerals
+          description: OK
           schema:
-            $ref: '#/definitions/models.RomanNumeral'
-      summary: Get Roman Numeral
-      tags:
-      - romans
+            items:
+              $ref: '#/definitions/models.RomanNumeral'
+            type: array
+      summary: Convert numbers to Roman numerals
     post:
-      description: Get the roman numeral equivalent for given ranges in ascending
-        order
+      consumes:
+      - application/json
+      description: Convert multiple ranges of numbers to their corresponding Roman
+        numeral representations.
+      operationId: convertRangesToRoman
+      parameters:
+      - description: Array of number ranges
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.RangesPayload'
       produces:
       - application/json
       responses:
         "200":
-          description: Successfully retrieved Roman Numerals
+          description: OK
           schema:
-            $ref: '#/definitions/models.RomanNumeral'
-      summary: Get Roman Numerals for Ranges of Numbers
-      tags:
-      - romans
+            items:
+              $ref: '#/definitions/models.RomanNumeral'
+            type: array
+      summary: Convert ranges of numbers to Roman numerals
 swagger: "2.0"

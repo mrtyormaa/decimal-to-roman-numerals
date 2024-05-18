@@ -1,7 +1,7 @@
 setup:
 	go install github.com/swaggo/swag/cmd/swag@latest
-	swag init -g cmd/server/main.go -o docs/
-	go build -o bin/server cmd/server/main.go
+	swag init
+	go build -o bin/ main.go
 
 build:
 	docker compose build --no-cache

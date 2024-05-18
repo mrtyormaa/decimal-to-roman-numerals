@@ -7,7 +7,7 @@ import (
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api"
 )
 
-// @title           Roman Numeral Convertor API
+// @title           Roman Numeral Converter API
 // @version         1.0
 // @description     This API takes a range of decimals and converts it to roman numerals
 
@@ -15,12 +15,12 @@ import (
 // @contact.email  asutosh.satapathy@gmail.com
 
 // @host      localhost:8001
-// @BasePath  /
+// @BasePath  /api/v1
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 func main() {
-	//gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.ReleaseMode)
 	gin.SetMode(gin.DebugMode)
 
 	r := api.InitRouter()

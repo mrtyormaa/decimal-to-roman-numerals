@@ -18,15 +18,6 @@ jobs:
         with:
           go-version: '1.21.10'
 
-      - name: Build and Publish Docker Image
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          docker build -t decimal-to-roman-numerals:${{ github.ref_name }} .
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push decimal-to-roman-numerals:${{ github.ref_name }}
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

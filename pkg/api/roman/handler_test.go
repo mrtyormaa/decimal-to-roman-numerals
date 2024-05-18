@@ -260,7 +260,7 @@ func TestProcessRanges(t *testing.T) {
 		expectedError string
 	}{
 		{
-			name: "Valid Ranges",
+			name: "ValidRanges",
 			input: models.RangesPayload{
 				Ranges: []models.NumberRange{
 					{Min: 1, Max: 5},
@@ -271,7 +271,7 @@ func TestProcessRanges(t *testing.T) {
 			expectedError: "",
 		},
 		{
-			name: "Invalid Range Min Greater Than Max",
+			name: "InvalidRanges_MinGreaterThanMax",
 			input: models.RangesPayload{
 				Ranges: []models.NumberRange{
 					{Min: 20, Max: 10},
@@ -281,7 +281,7 @@ func TestProcessRanges(t *testing.T) {
 			expectedError: fmt.Sprintf("invalid range. each range must be within %d to %d and min should not be greater than max", roman.LowerLimit, roman.UpperLimit),
 		},
 		{
-			name: "Range Out of Bounds",
+			name: "InvalidRanges_OutOfBounds",
 			input: models.RangesPayload{
 				Ranges: []models.NumberRange{
 					{Min: 0, Max: 10},
@@ -291,7 +291,7 @@ func TestProcessRanges(t *testing.T) {
 			expectedError: fmt.Sprintf("invalid range. each range must be within %d to %d and min should not be greater than max", roman.LowerLimit, roman.UpperLimit),
 		},
 		{
-			name:          "Empty Ranges",
+			name:          "ValidRanges_EmptyRange",
 			input:         models.RangesPayload{},
 			expected:      []int{},
 			expectedError: "",
@@ -321,12 +321,29 @@ func TestConvertRangesToRoman(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		input         models.RangesPayload
+		input         interface{}
 		expected      []models.RomanNumeral
 		expectedError string
 	}{
 		{
-			name: "Valid Ranges",
+			name: "ValidRanges_Single",
+			input: models.RangesPayload{
+				Ranges: []models.NumberRange{
+					{Min: 10, Max: 15},
+				},
+			},
+			expected: []models.RomanNumeral{
+				{Decimal: 10, Roman: "X"},
+				{Decimal: 11, Roman: "XI"},
+				{Decimal: 12, Roman: "XII"},
+				{Decimal: 13, Roman: "XIII"},
+				{Decimal: 14, Roman: "XIV"},
+				{Decimal: 15, Roman: "XV"},
+			},
+			expectedError: "",
+		},
+		{
+			name: "ValidRanges_Multiple",
 			input: models.RangesPayload{
 				Ranges: []models.NumberRange{
 					{Min: 10, Max: 12},
@@ -342,7 +359,15 @@ func TestConvertRangesToRoman(t *testing.T) {
 			expectedError: "",
 		},
 		{
-			name: "Invalid Range",
+			name: "EmptyRanges",
+			input: models.RangesPayload{
+				Ranges: []models.NumberRange{},
+			},
+			expected:      nil,
+			expectedError: "Empty 'ranges'. Provide valid min and max values for the ranges.",
+		},
+		{
+			name: "InvalidRange_OutOfBounds",
 			input: models.RangesPayload{
 				Ranges: []models.NumberRange{
 					{Min: 4000, Max: 5000},
@@ -350,6 +375,49 @@ func TestConvertRangesToRoman(t *testing.T) {
 			},
 			expected:      nil,
 			expectedError: fmt.Sprintf("invalid range. each range must be within %d to %d and min should not be greater than max", roman.LowerLimit, roman.UpperLimit),
+		},
+		{
+			name:          "InvalidJSON",
+			input:         "invalid json",
+			expected:      nil,
+			expectedError: "Invalid JSON payload.",
+		},
+		{
+			name: "MissingRangesKey",
+			input: map[string]interface{}{
+				"notRanges": []models.NumberRange{
+					{Min: 10, Max: 15},
+				},
+			},
+			expected:      nil,
+			expectedError: "Invalid JSON payload. Expected only 'ranges' key with an array value.",
+		},
+		{
+			name: "MissingRangesKey_ExtraKeys",
+			input: map[string]interface{}{
+				"ranges": []models.NumberRange{
+					{Min: 10, Max: 15},
+				},
+				"extra": "value",
+			},
+			expected:      nil,
+			expectedError: "Invalid JSON payload. Expected only 'ranges' key with an array value.",
+		},
+		{
+			name: "ValidRanges_OverlappingRanges",
+			input: models.RangesPayload{
+				Ranges: []models.NumberRange{
+					{Min: 10, Max: 12},
+					{Min: 11, Max: 13},
+				},
+			},
+			expected: []models.RomanNumeral{
+				{Decimal: 10, Roman: "X"},
+				{Decimal: 11, Roman: "XI"},
+				{Decimal: 12, Roman: "XII"},
+				{Decimal: 13, Roman: "XIII"},
+			},
+			expectedError: "",
 		},
 	}
 

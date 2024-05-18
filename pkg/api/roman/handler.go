@@ -1,7 +1,9 @@
 package roman
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"sort"
 	"strconv"
@@ -138,16 +140,44 @@ func ConvertNumbersToRomanNumerals(numbers []int) []models.RomanNumeral {
 // @Success 200 {object} []models.RomanNumeral
 // @Router /convert [post]
 func ConvertRangesToRoman(c *gin.Context) {
-	var payload models.RangesPayload
+	var payload map[string]interface{}
 
-	// Bind the JSON payload to the ranges variable
-	if err := c.ShouldBindJSON(&payload); err != nil {
+	// Read the raw request body
+	rawBody, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read request body"})
+		return
+	}
+
+	// Unmarshal the raw body into a map
+	if err := json.Unmarshal(rawBody, &payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload."})
 		return
 	}
 
+	// Check if the payload contains exactly one key "ranges" and the value is an array
+	rangesData, ok := payload["ranges"].([]interface{})
+	if !ok || len(payload) != 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload. Expected only 'ranges' key with an array value."})
+		return
+	}
+
+	// If "ranges" array is empty, return an empty result
+	if len(rangesData) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Empty 'ranges'. Provide valid min and max values for the ranges."})
+		return
+	}
+
+	// Parse the "ranges" key into RangesPayload struct
+	var rangesPayload models.RangesPayload
+	rangesDataJSON, _ := json.Marshal(rangesData)
+	if err := json.Unmarshal(rangesDataJSON, &rangesPayload.Ranges); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid 'ranges' data."})
+		return
+	}
+
 	// Process the ranges to generate a list of numbers
-	numbers, err := ProcessRanges(payload)
+	numbers, err := ProcessRanges(rangesPayload)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

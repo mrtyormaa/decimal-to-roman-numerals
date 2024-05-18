@@ -8,6 +8,7 @@ const (
 	ErrInvalidParam         = "only 'numbers' query parameter is allowed"
 	ErrMissingNumbersParam  = "the 'numbers' query parameter is required"
 	ErrInvalidInput         = "invalid input: please provide valid integers within the supported range (%d-%d)"
+	ErrOutOfBounds          = "input out of bounds, must be between %d and %d"
 	ErrFailedReadBody       = "failed to read request body"
 	ErrInvalidJSONPayload   = "invalid JSON payload"
 	ErrInvalidRangesPayload = "invalid JSON payload: expected only 'ranges' key with an array value"

@@ -21,8 +21,8 @@ func TestBasicRomanConverter_Convert(t *testing.T) {
 		expected      string
 		expectedError error
 	}{
-		{input: 0, expected: "", expectedError: fmt.Errorf("input out of bounds, must be between %d and %d", roman.LowerLimit, roman.UpperLimit)},
-		{input: 4000, expected: "", expectedError: fmt.Errorf("input out of bounds, must be between %d and %d", roman.LowerLimit, roman.UpperLimit)},
+		{input: 0, expected: "", expectedError: fmt.Errorf(roman.ErrOutOfBounds, roman.LowerLimit, roman.UpperLimit)},
+		{input: 4000, expected: "", expectedError: fmt.Errorf(roman.ErrOutOfBounds, roman.LowerLimit, roman.UpperLimit)},
 		{input: 1, expected: "I", expectedError: nil},
 		{input: 3, expected: "III", expectedError: nil},
 		{input: 4, expected: "IV", expectedError: nil},

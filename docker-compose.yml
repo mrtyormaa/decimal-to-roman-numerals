@@ -1,4 +1,3 @@
-version: '1.0'
 services:
   backend:
     container_name: decimal-to-roman-numerals
@@ -7,6 +6,4 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8001:8001
-    volumes:
-      - .:/app
-    command: go run main.go
+    command: ./bin/main

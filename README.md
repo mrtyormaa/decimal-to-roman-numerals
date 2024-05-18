@@ -1,5 +1,7 @@
 # decimal-to-roman-numerals
 
+[![codecov](https://codecov.io/github/mrtyormaa/decimal-to-roman-numerals/graph/badge.svg?token=WCPsoNnQEy)](https://codecov.io/github/mrtyormaa/decimal-to-roman-numerals)
+
 ## Overview
 
 This repository provides an API endpoint to convert decimal number ranges to Roman numerals.

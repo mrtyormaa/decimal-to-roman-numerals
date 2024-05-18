@@ -11,9 +11,6 @@ This repository provides an API endpoint to convert decimal number ranges to Rom
 ```
 decimal-to-roman-numerals/
 |-- bin/
-|-- cmd/
-|   |-- server/
-|       |-- main.go
 |-- config/
 |-- docs/
 |   |-- docs.go
@@ -26,12 +23,12 @@ decimal-to-roman-numerals/
 |       |-- router.go
 |   |-- middleware/
 |   |-- models/
-|       |-- roman.go
 |-- tests/
 |-- Dockerfile
 |-- docker-compose.yml
 |-- go.mod
 |-- go.sum
+|-- main.go
 |-- README.md
 ```
 
@@ -39,9 +36,7 @@ decimal-to-roman-numerals/
 
 1. **`bin/`**: Contains the compiled binaries.
 
-2. **`cmd/`**: Main applications for this project. The directory name for each application should match the name of the executable.
-
-    - **`main.go`**: The entry point.
+2. **`main.go`**: The entry point.
 
 3. **`pkg/`**: Libraries and packages that are okay to be used by applications from other projects. 
 
@@ -52,6 +47,8 @@ decimal-to-roman-numerals/
     - **`middleware/`**: Middleware for various functionalities.
 
 4. **`tests/`**: Test cases.
+
+4. **`docs/`**: Swagger generated UI and coverage report.
 
 ## Getting Started
 
@@ -123,7 +120,7 @@ This endpoint converts a comma-separated list of numbers to their corresponding 
 #### Example
 
 Request:
-```bash
+```http
 GET /convert?numbers=10,50,100
 ```
 

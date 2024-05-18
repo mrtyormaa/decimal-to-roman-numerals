@@ -1,4 +1,4 @@
-package roman
+package roman_test
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api/roman"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +18,7 @@ import (
 func TestConvertNumbersToRoman(t *testing.T) {
 	// Create a Gin router
 	router := gin.Default()
-	router.GET("/convert", ConvertNumbersToRoman)
+	router.GET("/convert", roman.ConvertNumbersToRoman)
 
 	// Test cases
 	testCases := []struct {
@@ -134,7 +135,7 @@ func TestParseNumberList(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		valid, invalid := ParseNumberList(test.input)
+		valid, invalid := roman.ParseNumberList(test.input)
 		if !equalIntSlices(valid, test.expectedValid) {
 			t.Errorf("ParseNumberList(%q) valid = %v; want %v", test.input, valid, test.expectedValid)
 		}
@@ -157,7 +158,7 @@ func TestConvertNumbersToRomanNumerals(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := ConvertNumbersToRomanNumerals(test.input)
+		result := roman.ConvertNumbersToRomanNumerals(test.input)
 		if !equalRomanNumeralSlices(result, test.expected) {
 			t.Errorf("ConvertNumbersToRomanNumerals(%v) = %v; want %v", test.input, result, test.expected)
 		}
@@ -250,7 +251,7 @@ func TestProcessRanges(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result, err := ProcessRanges(test.input)
+		result, err := roman.ProcessRanges(test.input)
 		if test.expectedError != "" {
 			if err == nil || err.Error() != test.expectedError {
 				t.Errorf("ProcessRanges(%v) error = %v; want %v", test.input, err, test.expectedError)
@@ -310,7 +311,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		r := gin.Default()
-		r.POST("/convert", ConvertRangesToRoman)
+		r.POST("/convert", roman.ConvertRangesToRoman)
 		r.ServeHTTP(w, req)
 
 		if test.expectedError != "" {

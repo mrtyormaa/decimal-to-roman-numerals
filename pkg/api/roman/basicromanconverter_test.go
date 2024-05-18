@@ -1,12 +1,20 @@
-package roman
+package roman_test
 
 import (
 	"errors"
 	"testing"
+
+	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api/roman"
 )
 
+// Test that the BasicRomanConverter type satisfies the RomanConverter interface
+func TestRomanConverterInterface(t *testing.T) {
+	var _ roman.RomanConverter = (*roman.BasicRomanConverter)(nil)
+}
+
+// Test the converter function
 func TestBasicRomanConverter_Convert(t *testing.T) {
-	converter := BasicRomanConverter{}
+	converter := roman.BasicRomanConverter{}
 
 	testCases := []struct {
 		input         int

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/mrtyormaa/decimal-to-roman-numerals/docs"
+	docs "github.com/mrtyormaa/decimal-to-roman-numerals/docs"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api/roman"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/middleware"
 
@@ -16,9 +16,11 @@ func InitRouter() *gin.Engine {
 	r.Use(gin.Logger())
 	if gin.Mode() == gin.ReleaseMode {
 		r.Use(middleware.Security())
-		r.Use(middleware.Xss())
 	}
 	r.Use(middleware.Cors())
+
+	// Serve Swagger UI
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	version := "/api/v1"
 	docs.SwaggerInfo.BasePath = version
@@ -30,7 +32,6 @@ func InitRouter() *gin.Engine {
 		v1.POST("/convert", roman.ConvertRangesToRoman)
 
 	}
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	return r
 }

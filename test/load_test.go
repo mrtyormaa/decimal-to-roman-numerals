@@ -1,39 +1,11 @@
 package test
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"sync"
 	"testing"
-
-	"github.com/gin-gonic/gin"
-	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api"
 )
-
-// SetupLoadRouter sets up the Gin router for testing
-func SetupLoadRouter() *gin.Engine {
-	return api.InitRouter()
-}
-
-// Helper function to perform a POST request and return the response recorder
-func performLoadTestPostRequest(router *gin.Engine, url string, payload interface{}) *httptest.ResponseRecorder {
-	w := httptest.NewRecorder()
-	jsonPayload, _ := json.Marshal(payload)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
-	req.Header.Set("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	return w
-}
-
-// Helper function to perform a GET request and return the response recorder
-func performLoadTestRequest(router *gin.Engine, url string) *httptest.ResponseRecorder {
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", url, nil)
-	router.ServeHTTP(w, req)
-	return w
-}
 
 // Load test for GET /convert endpoint
 // Perform total 1000 requests, distributed among the goroutines
@@ -49,7 +21,7 @@ func TestConvertHandlerLoad(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < numRequests/concurrency; j++ {
-				w := performLoadTestRequest(router, BasePath+"?numbers=123")
+				w := performRequest(router, BasePath+"?numbers=123")
 				if w.Code != http.StatusOK {
 					t.Errorf("handler returned wrong status code: got %v want %v", w.Code, http.StatusOK)
 				}
@@ -131,7 +103,7 @@ func TestConvertRangesHandlerLoad(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < numRequests/concurrency; j++ {
-				w := performLoadTestPostRequest(router, BasePath, payload)
+				w := performPostRequest(router, BasePath, payload)
 				if w.Code != http.StatusOK {
 					t.Errorf("handler returned wrong status code: got %v want %v", w.Code, http.StatusOK)
 				}

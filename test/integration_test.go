@@ -1,7 +1,6 @@
 package test
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,24 +14,6 @@ import (
 // SetupRouter sets up the Gin router for testing
 func SetupRouter() *gin.Engine {
 	return api.InitRouter()
-}
-
-// Helper function to perform a POST request and return the response recorder
-func performPostRequest(router *gin.Engine, url string, payload interface{}) *httptest.ResponseRecorder {
-	w := httptest.NewRecorder()
-	jsonPayload, _ := json.Marshal(payload)
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
-	req.Header.Set("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-	return w
-}
-
-// Helper function to perform a GET request and return the response recorder
-func performRequest(router *gin.Engine, url string) *httptest.ResponseRecorder {
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", url, nil)
-	router.ServeHTTP(w, req)
-	return w
 }
 
 // Helper function to check the response status code

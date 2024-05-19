@@ -82,4 +82,66 @@ func TestAddMetric(t *testing.T) {
 	}
 	err = monitor.AddMetric(summaryMetric)
 	assert.Error(t, err, "Adding a summary metric without objectives should produce an error")
+
+	// Test adding a metric with an empty name
+	emptyNameMetric := &Metric{
+		Type:        Counter,
+		Name:        "",
+		Description: "A metric with an empty name",
+		Labels:      []string{"label1"},
+	}
+	err = monitor.AddMetric(emptyNameMetric)
+	assert.Error(t, err, "Expected an error when adding a metric with an empty name")
+	assert.Equal(t, "metric name cannot be empty.", err.Error())
+}
+
+func TestSummaryHandler(t *testing.T) {
+	// Test with empty Objectives
+	metricWithEmptyObjectives := &Metric{
+		Type:        Summary,
+		Name:        "test_summary_empty",
+		Description: "A test summary metric with empty objectives",
+		Labels:      []string{"label1"},
+		Objectives:  map[float64]float64{},
+	}
+
+	err := summaryHandler(metricWithEmptyObjectives)
+	assert.Error(t, err, "Expected an error when Objectives are empty")
+	assert.Equal(t, "metric 'test_summary_empty' is summary type, cannot lose objectives param.", err.Error())
+
+	// Test with valid Objectives
+	metricWithValidObjectives := &Metric{
+		Type:        Summary,
+		Name:        "test_summary_valid",
+		Description: "A test summary metric with valid objectives",
+		Labels:      []string{"label1"},
+		Objectives:  map[float64]float64{0.5: 0.05, 0.9: 0.01},
+	}
+
+	err = summaryHandler(metricWithValidObjectives)
+	assert.NoError(t, err, "Expected no error when Objectives are valid")
+}
+
+func TestGetMetric(t *testing.T) {
+	monitor := GetMonitor()
+
+	// Add a metric to the monitor
+	existingMetric := &Metric{
+		Type:        Counter,
+		Name:        "existing_metric",
+		Description: "A test metric",
+		Labels:      []string{"label1"},
+	}
+	err := monitor.AddMetric(existingMetric)
+	assert.NoError(t, err, "Expected no error when adding a new metric")
+
+	// Test retrieving an existing metric
+	retrievedMetric := monitor.GetMetric("existing_metric")
+	assert.NotNil(t, retrievedMetric, "Expected to retrieve the existing metric")
+	assert.Equal(t, existingMetric, retrievedMetric, "Expected the retrieved metric to be the same as the existing metric")
+
+	// Test retrieving a non-existent metric
+	nonExistentMetric := monitor.GetMetric("non_existent_metric")
+	assert.NotNil(t, nonExistentMetric, "Expected to retrieve a non-nil metric for a non-existent metric")
+	assert.Equal(t, &Metric{}, nonExistentMetric, "Expected to retrieve an empty metric for a non-existent metric")
 }

@@ -202,7 +202,7 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 8,
+        "w": 7,
         "x": 8,
         "y": 0
       },
@@ -242,95 +242,68 @@
         "type": "prometheus",
         "uid": "prometheusdatasource"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
             }
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
+          "mappings": []
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 16,
+        "h": 16,
+        "w": 9,
+        "x": 15,
         "y": 0
       },
-      "id": 6,
+      "id": 14,
+      "links": [],
       "options": {
         "legend": {
-          "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
           "showLegend": true
         },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "tooltip": {
-          "mode": "multi",
+          "mode": "single",
           "sort": "none"
         }
       },
-      "pluginVersion": "10.2.4",
+      "pluginVersion": "7.2.0",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheusdatasource"
           },
-          "expr": "gin_request_uv_total",
+          "expr": "sum by(code, instance) (gin_uri_request_total)",
+          "format": "time_series",
+          "instant": false,
           "interval": "",
-          "legendFormat": "{{instance}}",
+          "intervalFactor": 1,
+          "legendFormat": "{{instance}}-{{code}}",
           "refId": "A"
         }
       ],
-      "title": "Unique Visitors",
-      "type": "timeseries"
+      "title": "Error Codes",
+      "type": "piechart"
     },
     {
       "datasource": {
@@ -393,7 +366,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 7,
         "w": 15,
         "x": 0,
         "y": 6
@@ -444,76 +417,6 @@
       },
       "fieldConfig": {
         "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 9,
-        "x": 15,
-        "y": 6
-      },
-      "id": 10,
-      "links": [],
-      "options": {
-        "displayMode": "basic",
-        "maxVizHeight": 300,
-        "minVizHeight": 16,
-        "minVizWidth": 8,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "10.2.4",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheusdatasource"
-          },
-          "expr": "sum by(uri, instance) (gin_uri_request_total)",
-          "format": "time_series",
-          "instant": false,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{instance}}-{{uri}}",
-          "refId": "A"
-        }
-      ],
-      "title": "URI Request",
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheusdatasource"
-      },
-      "fieldConfig": {
-        "defaults": {
           "color": {
             "mode": "palette-classic"
           },
@@ -531,10 +434,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
+        "h": 11,
         "w": 8,
         "x": 0,
-        "y": 14
+        "y": 13
       },
       "id": 13,
       "links": [],
@@ -585,68 +488,70 @@
         "type": "prometheus",
         "uid": "prometheusdatasource"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 80
+              }
+            ]
           },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
+          "unit": "none"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
-        "w": 10,
+        "h": 11,
+        "w": 7,
         "x": 8,
-        "y": 14
+        "y": 13
       },
-      "id": 14,
+      "id": 10,
       "links": [],
       "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "pieType": "pie",
+        "displayMode": "basic",
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "fields": "",
           "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
       },
-      "pluginVersion": "7.2.0",
+      "pluginVersion": "10.2.4",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheusdatasource"
           },
-          "expr": "sum by(code, instance) (gin_uri_request_total)",
+          "expr": "sum by(uri, instance) (gin_uri_request_total)",
           "format": "time_series",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{instance}}-{{code}}",
+          "legendFormat": "{{instance}}-{{uri}}",
           "refId": "A"
         }
       ],
-      "title": "Error Codes",
-      "type": "piechart"
+      "title": "URI Request",
+      "type": "bargauge"
     },
     {
       "aliasColors": {},
@@ -666,10 +571,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 12,
-        "w": 6,
-        "x": 18,
-        "y": 14
+        "h": 8,
+        "w": 9,
+        "x": 15,
+        "y": 16
       },
       "hiddenSeries": false,
       "id": 16,

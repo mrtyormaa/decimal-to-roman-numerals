@@ -4,7 +4,6 @@ import (
 	docs "github.com/mrtyormaa/decimal-to-roman-numerals/docs"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api/roman"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/middleware"
-	"github.com/penglongli/gin-metrics/ginmetrics"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -15,7 +14,7 @@ func InitRouter() *gin.Engine {
 	r := gin.Default()
 
 	// get global Monitor object
-	m := ginmetrics.GetMonitor()
+	m := middleware.GetMonitor()
 
 	// +optional set metric path, default /debug/metrics
 	m.SetMetricPath("/metrics")

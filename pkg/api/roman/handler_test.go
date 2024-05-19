@@ -42,8 +42,6 @@ func TestConvertNumbersToRoman(t *testing.T) {
 	router := gin.Default()
 	router.GET("/convert", roman.ConvertNumbersToRoman)
 
-	errInvalidInput := fmt.Sprintf(roman.ErrInvalidInput, roman.LowerLimit, roman.UpperLimit)
-
 	// Test cases
 	testCases := []struct {
 		name             string
@@ -73,31 +71,31 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			name:             "InvalidInput_NonNumeric",
 			queryParam:       "numbers=1,abc,10",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["abc"]}`, errInvalidInput),
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["abc"]}`, roman.NewAppError(roman.CodeInvalidInput).Error()),
 		},
 		{
 			name:             "InvalidInput_OutOfRange",
 			queryParam:       "numbers=5000,10000",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, errInvalidInput),
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, roman.NewAppError(roman.CodeInvalidInput).Error()),
 		},
 		{
 			name:             "InvalidInput_MixedOutOfRange",
 			queryParam:       "numbers=1,3,32,5000,10000",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, errInvalidInput),
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, roman.NewAppError(roman.CodeInvalidInput).Error()),
 		},
 		{
 			name:             "MissingQueryParam_NoParam",
 			queryParam:       "",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.ErrMissingNumbersParam),
+			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.NewAppError(roman.CodeMissingNumbersParam).Error()),
 		},
 		{
 			name:             "MissingQueryParam_OtherParam",
 			queryParam:       "number=1,2,3",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.ErrInvalidParam),
+			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.NewAppError(roman.CodeInvalidParam).Error()),
 		},
 		{
 			name:             "AscendingOrder",
@@ -280,7 +278,7 @@ func TestProcessRanges(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: fmt.Sprintf(roman.ErrInvalidRange, roman.LowerLimit, roman.UpperLimit),
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name: "InvalidRanges_OutOfBounds",
@@ -290,7 +288,7 @@ func TestProcessRanges(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: fmt.Sprintf(roman.ErrInvalidRange, roman.LowerLimit, roman.UpperLimit),
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name:          "ValidRanges_EmptyRange",
@@ -366,7 +364,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 				Ranges: []models.NumberRange{},
 			},
 			expected:      nil,
-			expectedError: roman.ErrEmptyRanges,
+			expectedError: roman.NewAppError(roman.CodeEmptyRanges).Error(),
 		},
 		{
 			name: "InvalidRange_OutOfBounds",
@@ -376,13 +374,13 @@ func TestConvertRangesToRoman(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: fmt.Sprintf(roman.ErrInvalidRange, roman.LowerLimit, roman.UpperLimit),
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name:          "InvalidJSON",
 			input:         "invalid json",
 			expected:      nil,
-			expectedError: roman.ErrInvalidJSONPayload,
+			expectedError: roman.NewAppError(roman.CodeInvalidJSONPayload).Error(),
 		},
 		{
 			name: "MissingRangesKey",
@@ -392,7 +390,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 				},
 			},
 			expected:      nil,
-			expectedError: roman.ErrInvalidRangesPayload,
+			expectedError: roman.NewAppError(roman.CodeInvalidRangesPayload).Error(),
 		},
 		{
 			name: "MissingRangesKey_ExtraKeys",
@@ -403,7 +401,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 				"extra": "value",
 			},
 			expected:      nil,
-			expectedError: roman.ErrInvalidRangesPayload,
+			expectedError: roman.NewAppError(roman.CodeInvalidRangesPayload).Error(),
 		},
 		{
 			name: "ValidRanges_OverlappingRanges",

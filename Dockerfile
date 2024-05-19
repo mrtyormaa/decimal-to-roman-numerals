@@ -8,13 +8,13 @@ COPY . .
 RUN swag init
 RUN CGO_ENABLED=1 go build -o bin/main main.go
 
-# Stage 2: Tester and Coverage Generator
+# Stage 2: Tester
 FROM golang:1.21.10 AS tester
 WORKDIR /app
 COPY --from=builder /app /app
 CMD ["sh", "-c", "go test ./..."]
 
-# Stage for generating coverage report
+# Stage 3: Tester and Coverage Generator
 FROM golang:1.21.10 AS coverage
 WORKDIR /app
 COPY --from=builder /app /app

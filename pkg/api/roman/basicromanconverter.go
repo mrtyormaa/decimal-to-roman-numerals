@@ -1,14 +1,10 @@
 package roman
 
-import (
-	"fmt"
-)
-
 type BasicRomanConverter struct{}
 
 func (c *BasicRomanConverter) Convert(num int) (string, error) {
 	if num < LowerLimit || num > UpperLimit {
-		return "", fmt.Errorf(ErrOutOfBounds, LowerLimit, UpperLimit)
+		return "", NewAppError(CodeOutOfBounds)
 	}
 
 	val := []int{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1}

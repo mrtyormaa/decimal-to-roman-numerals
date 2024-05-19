@@ -2,7 +2,6 @@ package roman
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"sort"
@@ -41,7 +40,7 @@ func ConvertNumbersToRoman(c *gin.Context) {
 	// Check if there are any query parameters other than 'numbers'
 	for param := range queryParams {
 		if param != "numbers" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidParam})
+			c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidParam).Error()})
 			return
 		}
 	}
@@ -51,7 +50,7 @@ func ConvertNumbersToRoman(c *gin.Context) {
 
 	// Check if the numbers parameter is missing
 	if len(numbersParams) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ErrMissingNumbersParam})
+		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeMissingNumbersParam).Error()})
 		return
 	}
 
@@ -61,7 +60,7 @@ func ConvertNumbersToRoman(c *gin.Context) {
 	// If there are any invalid numbers, return an error response
 	if len(invalidNumbers) > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error":           fmt.Sprintf(ErrInvalidInput, LowerLimit, UpperLimit),
+			"error":           NewAppError(CodeInvalidInput).Error(),
 			"invalid_numbers": invalidNumbers,
 		})
 		return
@@ -140,26 +139,26 @@ func ConvertRangesToRoman(c *gin.Context) {
 	// Read the raw request body
 	rawBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": ErrFailedReadBody})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": NewAppError(CodeFailedReadBody).Error()})
 		return
 	}
 
 	// Unmarshal the raw body into a map
 	if err := json.Unmarshal(rawBody, &payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidJSONPayload})
+		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidJSONPayload).Error()})
 		return
 	}
 
 	// Check if the payload contains exactly one key "ranges" and the value is an array
 	rangesData, ok := payload["ranges"].([]interface{})
 	if !ok || len(payload) != 1 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ErrInvalidRangesPayload})
+		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRangesPayload).Error()})
 		return
 	}
 
 	// If "ranges" array is empty, return an empty result
 	if len(rangesData) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": ErrEmptyRanges})
+		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeEmptyRanges).Error()})
 		return
 	}
 
@@ -191,7 +190,7 @@ func ProcessRanges(payload models.RangesPayload) ([]int, error) {
 
 	for _, r := range payload.Ranges {
 		if r.Min < LowerLimit || r.Max > UpperLimit || r.Min > r.Max {
-			return nil, fmt.Errorf(ErrInvalidRange, LowerLimit, UpperLimit)
+			return nil, NewAppError(CodeInvalidRange)
 		}
 		for i := r.Min; i <= r.Max; i++ {
 			numbers = append(numbers, i)

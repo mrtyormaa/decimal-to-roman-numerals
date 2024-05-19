@@ -11,7 +11,6 @@ import (
 
 var (
 	metricRequestTotal    = "gin_request_total"
-	metricRequestUVTotal  = "gin_request_uv_total"
 	metricURIRequestTotal = "gin_uri_request_total"
 	metricRequestBody     = "gin_request_body_total"
 	metricResponseBody    = "gin_response_body_total"
@@ -53,12 +52,6 @@ func (m *Monitor) initGinMetrics() {
 		Type:        Counter,
 		Name:        metricRequestTotal,
 		Description: "all the server received request num.",
-		Labels:      nil,
-	})
-	_ = monitor.AddMetric(&Metric{
-		Type:        Counter,
-		Name:        metricRequestUVTotal,
-		Description: "all the server received ip num.",
 		Labels:      nil,
 	})
 	_ = monitor.AddMetric(&Metric{

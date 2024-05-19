@@ -4,9 +4,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: builder
     ports:
       - "8001:8001"
     command: ./bin/main
+
+  roman-numerals-tests:
+    container_name: decimal-to-roman-numerals-tests
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: tester
+    depends_on:
+      - roman-numerals
 
   prometheus:
     image: prom/prometheus:v2.45.3

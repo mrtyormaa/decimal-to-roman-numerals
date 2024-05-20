@@ -45,7 +45,9 @@ func TestNewAppError(t *testing.T) {
 			name:         "InvalidRange",
 			code:         CodeInvalidRange,
 			expectedCode: CodeInvalidRange,
-			expectedMsg:  "invalid json: json must contain 'ranges' key with an array of 'min' and 'max' values. 'min' and 'max' values must be within 1 to 3999 and 'min' should not be greater than 'max'",
+			expectedMsg: "invalid JSON: JSON must contain only the 'ranges' key, which should be an array of one or more objects with 'min' " +
+				"and 'max' values. 'min' and 'max' values must be within 1 to 3999, and 'min' should not be greater than 'max'. " +
+				"No other keys are allowed.",
 		},
 		{
 			name:         "InvalidJSONDuplicateKeys",

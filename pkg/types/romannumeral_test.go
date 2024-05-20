@@ -1,29 +1,69 @@
-package types_test
+package types
 
 import (
 	"encoding/json"
 	"testing"
 
-	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRomanNumeralJSONMarshalling(t *testing.T) {
-	// Create a sample RomanNumeral instance
-	romanNumeral := types.RomanNumeral{
-		Decimal: 10,
-		Roman:   "X",
+func TestRomanNumeralResponse(t *testing.T) {
+	expected := RomanNumeralResponse{
+		Results: []RomanNumeral{
+			{Decimal: 100, Roman: "C"},
+			{Decimal: 101, Roman: "CI"},
+		},
 	}
 
-	// Marshal the RomanNumeral instance to JSON
-	jsonData, err := json.Marshal(romanNumeral)
-	assert.NoError(t, err, "Error marshalling RomanNumeral to JSON")
+	data, err := json.Marshal(expected)
+	assert.NoError(t, err)
 
-	// Unmarshal the JSON data back to a RomanNumeral instance
-	var unmarshalledRomanNumeral types.RomanNumeral
-	err = json.Unmarshal(jsonData, &unmarshalledRomanNumeral)
-	assert.NoError(t, err, "Error unmarshalling JSON to RomanNumeral")
+	var actual RomanNumeralResponse
+	err = json.Unmarshal(data, &actual)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}
 
-	// Ensure that the unmarshalled RomanNumeral instance matches the original
-	assert.Equal(t, romanNumeral, unmarshalledRomanNumeral, "Unmarshalled RomanNumeral does not match original")
+func TestErrorResponse(t *testing.T) {
+	expected := ErrorResponse{
+		Error:          "[ERR1002] invalid input: please provide valid integers within the supported range (1-3999)",
+		InvalidNumbers: []string{"8888"},
+	}
+
+	data, err := json.Marshal(expected)
+	assert.NoError(t, err)
+
+	var actual ErrorResponse
+	err = json.Unmarshal(data, &actual)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}
+
+func TestJsonErrorResponse(t *testing.T) {
+	expected := JsonErrorResponse{
+		Error: "[ERR1005] invalid JSON: JSON must contain only the 'ranges' key, which should be an array of one or more objects with 'min' and 'max' values. 'min' and 'max' values must be within 1 to 3999, and 'min' should not be greater than 'max'. No other keys are allowed.",
+	}
+
+	data, err := json.Marshal(expected)
+	assert.NoError(t, err)
+
+	var actual JsonErrorResponse
+	err = json.Unmarshal(data, &actual)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}
+
+func TestHealthResponse(t *testing.T) {
+	expected := HealthResponse{
+		Status:  "success",
+		Message: "Decimal to Roman Numerals Converter",
+	}
+
+	data, err := json.Marshal(expected)
+	assert.NoError(t, err)
+
+	var actual HealthResponse
+	err = json.Unmarshal(data, &actual)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 }

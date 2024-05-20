@@ -1,6 +1,37 @@
 basePath: /api/v1
 definitions:
-  models.NumberRange:
+  types.ErrorResponse:
+    properties:
+      error:
+        example: '[ERR1002] invalid input: please provide valid integers within the
+          supported range (1-3999)'
+        type: string
+      invalid_numbers:
+        example:
+        - '[''8888'']'
+        items:
+          type: string
+        type: array
+    type: object
+  types.HealthResponse:
+    properties:
+      message:
+        example: Decimal to Roman Numerals Converter
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  types.JsonErrorResponse:
+    properties:
+      error:
+        example: '[ERR1005] invalid JSON: JSON must contain only the ''ranges'' key,
+          which should be an array of one or more objects with ''min'' and ''max''
+          values. ''min'' and ''max'' values must be within 1 to 3999, and ''min''
+          should not be greater than ''max''. No other keys are allowed.'
+        type: string
+    type: object
+  types.NumberRange:
     properties:
       max:
         description: The maximum value of the range (inclusive).
@@ -14,21 +45,30 @@ definitions:
     - max
     - min
     type: object
-  models.RangesPayload:
+  types.RangesPayload:
     properties:
       ranges:
         items:
-          $ref: '#/definitions/models.NumberRange'
+          $ref: '#/definitions/types.NumberRange'
         type: array
     required:
     - ranges
     type: object
-  models.RomanNumeral:
+  types.RomanNumeral:
     properties:
       number:
+        example: 100
         type: integer
       roman:
+        example: C
         type: string
+    type: object
+  types.RomanNumeralResponse:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/types.RomanNumeral'
+        type: array
     type: object
 externalDocs:
   description: OpenAPI
@@ -46,11 +86,15 @@ paths:
     get:
       consumes:
       - application/json
-      description: Convert a comma-separated list of numbers to their corresponding
-        Roman numeral representations.
+      description: |-
+        Converts a comma-separated list of integers(within the range of 1 to 3999) into their corresponding Roman numeral representations.
+        The response provides a unique, ascending list of Roman numerals. Leading zeroes, leading '+' signs, and extra spaces are supported.
+        For example, /convert?numbers=1,1,2,2,2,3,3 will return results for 1, 2, 3.
+        This endpoint also supports pluralized query formats, such as /convert?numbers=1,2 or /convert?numbers=1&numbers=2,3.
       operationId: convertNumbersToRoman
       parameters:
-      - description: Comma-separated list of integers to be converted
+      - description: Single integer or Comma-separated list of integers to be converted
+        example: '"52"; "1,4,9"; "01,02"; "1,52,098,+437"'
         in: query
         name: numbers
         required: true
@@ -59,25 +103,30 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Successful response
           schema:
-            items:
-              $ref: '#/definitions/models.RomanNumeral'
-            type: array
-      summary: Convert numbers to Roman numerals
+            $ref: '#/definitions/types.RomanNumeralResponse'
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Convert Integers to Roman Numerals
     post:
       consumes:
       - application/json
-      description: Convert multiple ranges of numbers to their corresponding Roman
-        numeral representations.
+      description: |
+        This endpoint accepts a JSON request body with multiple ranges of numbers(within the range of 1 to 3999), converting each to its Roman numeral equivalent.
+        Both 'min' and 'max' values in the range are inclusive. For example, the range 1-3 will generate results for 1, 2, and 3.
+        The response provides a unique list of numbers in ascending order from all specified ranges, sorted in ascending order. For example, ranges 3-4 and 2-5 will return results for 2, 3, 4, and 5 only once.
+        Note that leading zeroes and leading '+' signs are not supported due to JSON limitations. Query parameters are not accepted; the request must be sent as a JSON object.
       operationId: convertRangesToRoman
       parameters:
-      - description: Array of number ranges
+      - description: List of number ranges to be converted
         in: body
-        name: input
+        name: ranges
         required: true
         schema:
-          $ref: '#/definitions/models.RangesPayload'
+          $ref: '#/definitions/types.RangesPayload'
       produces:
       - application/json
       responses:
@@ -85,7 +134,25 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.RomanNumeral'
+              $ref: '#/definitions/types.RomanNumeralResponse'
             type: array
-      summary: Convert ranges of numbers to Roman numerals
+        "400":
+          description: Invalid JSON Payload
+          schema:
+            $ref: '#/definitions/types.JsonErrorResponse'
+      summary: Convert Ranges of Numbers to Roman Numerals
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Returns the health status of the service along with a message.
+      operationId: healthCheck
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Service is healthy
+          schema:
+            $ref: '#/definitions/types.HealthResponse'
+      summary: Check service health
 swagger: "2.0"

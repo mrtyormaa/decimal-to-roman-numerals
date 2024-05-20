@@ -16,6 +16,14 @@ var converter RomanConverter = &BasicRomanConverter{}
 
 // @BasePath /
 
+// Healthcheck handles the API request to check the service health.
+// @Summary Check service health
+// @Description Returns the health status of the service along with a message.
+// @ID healthCheck
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.HealthResponse "Service is healthy"
+// @Router /health [get]
 func Healthcheck(g *gin.Context) {
 	response := gin.H{
 		"status":  "success",
@@ -25,13 +33,17 @@ func Healthcheck(g *gin.Context) {
 }
 
 // ConvertNumbersToRoman handles the API request to convert numbers to Roman numerals.
-// @Summary Convert numbers to Roman numerals
-// @Description Convert a comma-separated list of numbers to their corresponding Roman numeral representations.
+// @Summary Convert Integers to Roman Numerals
+// @Description Converts a comma-separated list of integers(within the range of 1 to 3999) into their corresponding Roman numeral representations.
+// @Description The response provides a unique, ascending list of Roman numerals. Leading zeroes, leading '+' signs, and extra spaces are supported.
+// @Description For example, /convert?numbers=1,1,2,2,2,3,3 will return results for 1, 2, 3.
+// @Description This endpoint also supports pluralized query formats, such as /convert?numbers=1,2 or /convert?numbers=1&numbers=2,3.
 // @ID convertNumbersToRoman
 // @Accept json
 // @Produce json
-// @Param numbers query string true "Comma-separated list of integers to be converted"
-// @Success 200 {object} []models.RomanNumeral
+// @Param numbers query string true "Single integer or Comma-separated list of integers to be converted" example("52"; "1,4,9"; "01,02"; "1,52,098,+437")
+// @Success 200 {object} types.RomanNumeralResponse "Successful response"
+// @Failure 400 {object} types.ErrorResponse "Invalid input"
 // @Router /convert [get]
 func ConvertNumbersToRoman(c *gin.Context) {
 	// Get all query parameters
@@ -135,13 +147,18 @@ func hasDuplicateRangesKey(data string) error {
 }
 
 // ConvertRangesToRoman handles the API request to convert ranges of numbers to Roman numerals.
-// @Summary Convert ranges of numbers to Roman numerals
-// @Description Convert multiple ranges of numbers to their corresponding Roman numeral representations.
+// @Summary Convert Ranges of Numbers to Roman Numerals
+// @Description This endpoint accepts a JSON request body with multiple ranges of numbers(within the range of 1 to 3999), converting each to its Roman numeral equivalent.
+// @Description Both 'min' and 'max' values in the range are inclusive. For example, the range 1-3 will generate results for 1, 2, and 3.
+// @Description The response provides a unique list of numbers in ascending order from all specified ranges, sorted in ascending order. For example, ranges 3-4 and 2-5 will return results for 2, 3, 4, and 5 only once.
+// @Description Note that leading zeroes and leading '+' signs are not supported due to JSON limitations. Query parameters are not accepted; the request must be sent as a JSON object.
+// @Description
 // @ID convertRangesToRoman
 // @Accept json
 // @Produce json
-// @Param input body models.RangesPayload true "Array of number ranges"
-// @Success 200 {object} []models.RomanNumeral
+// @Param ranges body types.RangesPayload true "List of number ranges to be converted" example({"ranges": [{"min": 50, "max": 52}, {"min": 10, "max": 12}]})
+// @Success 200 {object} []types.RomanNumeralResponse
+// @Failure 400 {object} types.JsonErrorResponse "Invalid JSON Payload"
 // @Router /convert [post]
 func ConvertRangesToRoman(c *gin.Context) {
 	var payload map[string]interface{}

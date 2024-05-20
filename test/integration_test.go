@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"unicode"
 )
 
 // Helper function to check the response status code
@@ -84,14 +85,46 @@ func TestConvertHandlerValid(t *testing.T) {
 	}
 }
 
+func TestConvertHandlerValidSpecial(t *testing.T) {
+	router := SetupRouter()
+	testCases := []struct {
+		params   string
+		number   int
+		expected string
+	}{
+		{"01", 1, "I"},
+		{"   04   ", 4, "IV"},
+		{"+9", 9, "IX"},
+	}
+
+	for _, tc := range testCases {
+		t.Run("Valid_"+tc.params, func(t *testing.T) {
+			w := performRequest(router, BasePath+"?numbers="+tc.params)
+			checkStatus(t, w, http.StatusOK)
+			checkResponse(t, w, tc.number, tc.expected)
+		})
+	}
+}
+
+// Generates all unicodes except numbers
+func generateAllUnicodeCharsExceptNumbers() []string {
+	var unicodeChars []string
+	for i := rune(0); i <= unicode.MaxRune; i++ {
+		if unicode.IsGraphic(i) && !unicode.IsNumber(i) {
+			unicodeChars = append(unicodeChars, string(i))
+		}
+	}
+	return unicodeChars
+}
+
 // Test cases for invalid inputs for GET /api/v1/convert
 func TestConvertHandlerInvalid(t *testing.T) {
 	router := SetupRouter()
 	testCases := []string{
-		"abc",
-		"-1",
-		"4000",
+		"abc", "-1", "4000", "+0", "-1", "%1", "/1", "//1", "\\1", "~1", "^1",
+		"°1", "1+2",
 	}
+	testCases = append(testCases, generateAllUnicodeCharsExceptNumbers()...)
 
 	for _, tc := range testCases {
 		t.Run("Invalid_"+tc, func(t *testing.T) {

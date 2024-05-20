@@ -18,52 +18,35 @@ Execute `make up` command and visit the links below.
 | [http://localhost:8001/metrics](http://localhost:8001/metrics) | Link to the metrics endpoint used for Prometheus                |
 | [http://localhost:9090](http://localhost:9090) | Link to the Prometheus instance                        |
 | [http://localhost:3000](http://localhost:3000) | Link to the Grafana instance, login: `admin`, password: `admin` |
+| [Gin Application Metrics](http://localhost:3000/d/FDB061FMz/gin-application-metrics?orgId=1&refresh=5s) | Grafana Dashboard showing stats like total requests, status code distribuion etc.                   |
+| [Go Metrics](http://localhost:3000/d/CgCw8jKZz/go-metrics?orgId=1&refresh=5s) | Grafana Dashboard showing various go memory stats |
 
 
 ## Folder structure
-
 ```
 decimal-to-roman-numerals/
-|-- bin/
-|-- config/
-|-- docs/
-|   |-- docs.go
-|   |-- swagger.json
-|   |-- swagger.yaml
-|-- pkg/
-|   |-- api/
-|       |-- roman/
-|           |-- handler.go
-|       |-- router.go
-|   |-- middleware/
-|   |-- models/
-|-- test/
-|-- Dockerfile
-|-- docker-compose.yml
-|-- go.mod
-|-- go.sum
-|-- main.go
-|-- README.md
+|-- bin/                        # Contains the compiled binaries
+|-- config/                     # Configuration files and settings
+|-- docs/                       # Documentation and Swagger UI
+|   |-- docs.go                 # Go file for documentation generation
+|   |-- swagger.json            # Swagger specification in JSON format
+|   |-- swagger.yaml            # Swagger specification in YAML format
+|-- pkg/                        # Libraries and packages for external use
+|   |-- api/                    # API logic
+|       |-- roman/              # Roman numeral conversion logic
+|           |-- handler.go      # HTTP handlers for Roman numeral conversion
+|       |-- router.go           # API routes
+|   |-- types/                  # Data types and models
+|   |-- middleware/             # Middleware for various functionalities
+|-- test/                       # Integration and load tests
+|-- Dockerfile                  # Dockerfile for building the container
+|-- docker-compose.yml          # Docker Compose file for multi-container applications
+|-- go.mod                      # Go module file
+|-- go.sum                      # Go dependencies checksum file
+|-- main.go                     # The entry point of the application
+|-- README.md                   # Project overview and instructions
+|-- Makefile                    # Makefile for building, testing, and running the application
 ```
-
-### Explanation of Directories and Files:
-
-1. **`bin/`**: Contains the compiled binaries.
-
-2. **`main.go`**: The entry point.
-
-3. **`pkg/`**: Libraries and packages that are okay to be used by applications from other projects. 
-
-    - **`api/`**: API logic.
-        - **`handler.go`**: HTTP handlers.
-        - **`router.go`**: Routes.
-    - **`types/`**: Data types/models.
-    - **`middleware/`**: Middleware for various functionalities.
-
-4. **`test/`**: Integration tests, Load tests.
-
-4. **`docs/`**: Swagger generated UI.
-
 ## Getting Started
 
 ### Prerequisites
@@ -73,7 +56,7 @@ decimal-to-roman-numerals/
 - Docker Compose
 - Make (Optional, but highly recommended)
 
-### Installation
+### Installation and Running
 
 1. Clone the repository
 
@@ -104,6 +87,33 @@ Here are a list of commands to run the application via containers.
 | `make restart`| Restarts Docker containers.                                                 |
 | `make clean`  | Stops and removes Docker containers and images, prunes Docker volumes, and removes build artifacts. |
 
+### Make Optional commands
+**Docker Compose Commands for `decimal-to-roman-numerals`**
+
+| **Operation**              | **Command**                                                                                                              |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| **Setup**                  |                                                                                                                          |
+| Install Swag               | `go install github.com/swaggo/swag/cmd/swag@latest`                                                                      |
+| Download Go Modules        | `go mod download`                                                                                                        |
+| Initialize Swag Documentation | `swag init`                                                                                                             |
+| Build Go Project           | `go build -o bin/main main.go`                                                                                           |
+| **Build Docker Images**    |                                                                                                                          |
+| Build without cache        | `docker-compose -f docker-compose.yml build --no-cache`                                                                  |
+| **Test the Application**   |                                                                                                                          |
+| Run tests                  | `docker-compose -f docker-compose.yml up --build roman-numerals-tests`                                                   |
+| **Generate Coverage Report** |                                                                                                                        |
+| Build coverage container   | `docker build -t decimal-to-roman-numerals-coverage -f Dockerfile --target coverage .`                                   |
+| Run coverage container     | `docker run --rm -v $(pwd)/coverage:/coverage decimal-to-roman-numerals-coverage`                                        |
+| **Start Services**         |                                                                                                                          |
+| Start application, Prometheus, and Grafana | `docker-compose -f docker-compose.yml up -d roman-numerals prometheus grafana`                                          |
+| **Stop Services**          |                                                                                                                          |
+| Stop and remove containers | `docker-compose -f docker-compose.yml down`                                                                              |
+| **Restart Services**       |                                                                                                                          |
+| Restart containers         | `docker-compose -f docker-compose.yml restart`                                                                           |
+| **Clean Up**               |                                                                                                                          |
+| Stop and remove containers, images, and volumes | `docker-compose -f docker-compose.yml down --rmi all`<br>`docker volume prune -f`                           |
+
+
 ## API Documentation
 
 The API is documented using Swagger and can be accessed at `http://localhost:8001/swagger/index.html`.
@@ -130,7 +140,7 @@ This endpoint converts a comma-separated list of numbers to their corresponding 
 #### Example
 Request:
 ```http
-GET /convert?numbers=10,50,100
+GET /api/v1/convert?numbers=10,50,100
 ```
 
 Response:
@@ -176,7 +186,7 @@ This endpoint converts multiple ranges of numbers to their corresponding Roman n
 
 Request:
 ```http
-POST /convert
+POST /api/v1/convert
 Content-Type: application/json
 
 {
@@ -266,10 +276,10 @@ The tests are written using the Go testing package and the Gin web framework. Th
 
 ##### GET /api/v1/convert
 
-1. **Valid Inputs**: Tests the conversion of various integers to Roman numerals.
+1. **Valid Inputs**: Tests the conversion of various integers to Roman numerals. The api handles leading zeroes, leading `+` sign and extra spaces.
     - Example: `1` to `I`, `58` to `LVIII`, `3999` to `MMMCMXCIX`.
 
-2. **Invalid Inputs**: Tests the response for invalid inputs such as non-numeric strings and out-of-range values.
+2. **Invalid Inputs**: Tests the response for invalid inputs such as non-numeric strings, out-of-range values, all non-numeric unicodes, arithmatic operations.
     - Example: `"abc"`, `-1`, `4000`.
 
 3. **Edge Cases**: Tests the boundary values for valid Roman numeral conversions.
@@ -284,7 +294,7 @@ The tests are written using the Go testing package and the Gin web framework. Th
     - Expected results: `10` to `X`, `11` to `XI`, `12` to `XII`, `14` to `XIV`, `15` to `XV`, `16` to `XVI`.
 
 2. **Invalid Inputs**: Tests the response for various invalid range inputs.
-    - Example: Empty ranges, non-integer values, negative values, max less than min, invalid jsons etc.
+    - Example: Empty ranges, non-integer values, negative values, max less than min, invalid jsons etc. Leading zeroes, leading `+` sign are not supported here.
 
 3. **Edge Cases**: Tests various edge cases for the range inputs.
     - Example: Single number range, very small range, maximum valid range, overlapping large ranges, reverse order ranges.

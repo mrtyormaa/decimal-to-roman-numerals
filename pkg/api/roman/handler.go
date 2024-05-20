@@ -109,6 +109,8 @@ func ConvertNumbersToRomanNumerals(numbers []int) []types.RomanNumeral {
 
 	var results []types.RomanNumeral
 	for number := range uniqueNumbers {
+		// todo: need to handle the error thrown by Convert
+		// we never reach to error state as number is always valid
 		roman, _ := converter.Convert(number)
 		results = append(results, types.RomanNumeral{
 			Decimal: uint(number),

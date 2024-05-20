@@ -165,20 +165,20 @@ func ConvertRangesToRoman(c *gin.Context) {
 
 	// Unmarshal the raw body into a map
 	if err := json.Unmarshal(rawBody, &payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidJSONPayload).Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRange).Error()})
 		return
 	}
 
 	// Check if the payload contains exactly one key "ranges" and the value is an array
 	rangesData, ok := payload["ranges"].([]interface{})
 	if !ok || len(payload) != 1 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRangesPayload).Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRange).Error()})
 		return
 	}
 
 	// If "ranges" array is empty, return an empty result
 	if len(rangesData) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeEmptyRanges).Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRange).Error()})
 		return
 	}
 

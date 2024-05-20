@@ -9,10 +9,7 @@ const (
 	CodeInvalidInput             = "ERR1002"
 	CodeOutOfBounds              = "ERR1003"
 	CodeFailedReadBody           = "ERR1004"
-	CodeInvalidJSONPayload       = "ERR1005"
-	CodeInvalidRangesPayload     = "ERR1006"
-	CodeEmptyRanges              = "ERR1007"
-	CodeInvalidRange             = "ERR1008"
-	CodeInvalidJSONDuplicateKeys = "ERR1009"
-	CodeQueryParamInPostRequest  = "ERR1010"
+	CodeInvalidRange             = "ERR1005"
+	CodeInvalidJSONDuplicateKeys = "ERR1006"
+	CodeQueryParamInPostRequest  = "ERR1007"
 )

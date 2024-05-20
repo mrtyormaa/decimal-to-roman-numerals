@@ -21,7 +21,7 @@ func TestNewAppError(t *testing.T) {
 			name:         "MissingNumbersParam",
 			code:         CodeMissingNumbersParam,
 			expectedCode: CodeMissingNumbersParam,
-			expectedMsg:  "the 'numbers' query parameter is required",
+			expectedMsg:  "'numbers' query parameter is required",
 		},
 		{
 			name:         "InvalidInput",
@@ -42,28 +42,10 @@ func TestNewAppError(t *testing.T) {
 			expectedMsg:  "failed to read request body",
 		},
 		{
-			name:         "InvalidJSONPayload",
-			code:         CodeInvalidJSONPayload,
-			expectedCode: CodeInvalidJSONPayload,
-			expectedMsg:  "invalid JSON payload",
-		},
-		{
-			name:         "InvalidRangesPayload",
-			code:         CodeInvalidRangesPayload,
-			expectedCode: CodeInvalidRangesPayload,
-			expectedMsg:  "invalid JSON payload: expected only 'ranges' key with an array value",
-		},
-		{
-			name:         "EmptyRanges",
-			code:         CodeEmptyRanges,
-			expectedCode: CodeEmptyRanges,
-			expectedMsg:  "empty 'ranges': provide valid min and max values for the ranges",
-		},
-		{
 			name:         "InvalidRange",
 			code:         CodeInvalidRange,
 			expectedCode: CodeInvalidRange,
-			expectedMsg:  "invalid range: each range must be within 1 to 3999 and min should not be greater than max",
+			expectedMsg:  "invalid json: json must contain 'ranges' key with an array of 'min' and 'max' values. 'min' and 'max' values must be within 1 to 3999 and 'min' should not be greater than 'max'",
 		},
 		{
 			name:         "InvalidJSONDuplicateKeys",

@@ -20,8 +20,8 @@ import (
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 func main() {
-	// gin.SetMode(gin.ReleaseMode)
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.DebugMode)
 
 	r := api.InitRouter()
 

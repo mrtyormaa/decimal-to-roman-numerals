@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/models"
+	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/types"
 )
 
 var converter RomanConverter = &BasicRomanConverter{}
@@ -101,16 +101,16 @@ func ParseNumberList(numbersParams []string) ([]int, []string) {
 }
 
 // ConvertNumbersToRomanNumerals converts a list of unique numbers to their Roman numeral equivalents
-func ConvertNumbersToRomanNumerals(numbers []int) []models.RomanNumeral {
+func ConvertNumbersToRomanNumerals(numbers []int) []types.RomanNumeral {
 	uniqueNumbers := make(map[int]struct{})
 	for _, number := range numbers {
 		uniqueNumbers[number] = struct{}{}
 	}
 
-	var results []models.RomanNumeral
+	var results []types.RomanNumeral
 	for number := range uniqueNumbers {
 		roman, _ := converter.Convert(number)
-		results = append(results, models.RomanNumeral{
+		results = append(results, types.RomanNumeral{
 			Decimal: uint(number),
 			Roman:   roman,
 		})
@@ -183,7 +183,7 @@ func ConvertRangesToRoman(c *gin.Context) {
 	}
 
 	// Parse the "ranges" key into RangesPayload struct
-	var rangesPayload models.RangesPayload
+	var rangesPayload types.RangesPayload
 	rangesDataJSON, _ := json.Marshal(rangesData)
 	if err := json.Unmarshal(rangesDataJSON, &rangesPayload.Ranges); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid 'ranges' data."})
@@ -205,7 +205,7 @@ func ConvertRangesToRoman(c *gin.Context) {
 }
 
 // ProcessRanges processes the ranges and generates a list of numbers
-func ProcessRanges(payload models.RangesPayload) ([]int, error) {
+func ProcessRanges(payload types.RangesPayload) ([]int, error) {
 	var numbers []int
 
 	for _, r := range payload.Ranges {

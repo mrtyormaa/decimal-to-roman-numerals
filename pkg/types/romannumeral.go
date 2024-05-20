@@ -1,4 +1,4 @@
-package models
+package types
 
 // RomanNumeral struct defines the response model for the converted numbers.
 type RomanNumeral struct {

@@ -8,6 +8,10 @@
 
 This repository provides an API endpoint to convert decimal number ranges to Roman numerals.
 
+**TL;DR to Run and See Results**
+
+Execute `make up` command and visit the links below.
+
 | Link                             | Description                                                |
 |----------------------------------|------------------------------------------------------------|
 | [http://localhost:8001/swagger/index.html](http://localhost:8001/swagger/index.html) | Link to the Swagger API documentation                  |
@@ -53,12 +57,12 @@ decimal-to-roman-numerals/
     - **`api/`**: API logic.
         - **`handler.go`**: HTTP handlers.
         - **`router.go`**: Routes.
-    - **`models/`**: Data models.
+    - **`types/`**: Data types/models.
     - **`middleware/`**: Middleware for various functionalities.
 
 4. **`test/`**: Integration tests, Load tests.
 
-4. **`docs/`**: Swagger generated UI and coverage report.
+4. **`docs/`**: Swagger generated UI.
 
 ## Getting Started
 
@@ -67,7 +71,7 @@ decimal-to-roman-numerals/
 - Go 1.21+
 - Docker
 - Docker Compose
-- Make
+- Make (Optional, but highly recommended)
 
 ### Installation
 
@@ -85,9 +89,9 @@ cd decimal-to-roman-numerals
 
 3. Build and run the Docker containers
 
-To run the project localy please use `make setup` to install swag and install all the necessary dependencies. Then you can use `go run main.go` to run the application.
+To run the project localy, use `make setup` to install swag and all other necessary dependencies. Use `go run main.go` to run the application. This will run the decimal-to-roman-numerals. To run all the containers, i.e. the application, prometheus and grafana use the command `make up`.
 
-Here are a list of commands to run the application via containers. `make up` is all you need. :smiley:
+Here are a list of commands to run the application via containers.
 
 | Command       | Description                                                                 |
 |---------------|-----------------------------------------------------------------------------|

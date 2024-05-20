@@ -13,7 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api/roman"
-	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/models"
+	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -151,7 +151,7 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			if tc.expectedStatus == http.StatusOK {
 				// Unmarshal response to extract results
 				var response struct {
-					Results []models.RomanNumeral `json:"results"`
+					Results []types.RomanNumeral `json:"results"`
 				}
 				assert.NoError(t, json.Unmarshal(res.Body.Bytes(), &response))
 
@@ -227,12 +227,12 @@ func TestParseNumberList(t *testing.T) {
 func TestConvertNumbersToRomanNumerals(t *testing.T) {
 	tests := []struct {
 		input    []int
-		expected []models.RomanNumeral
+		expected []types.RomanNumeral
 	}{
-		{[]int{1, 2, 3}, []models.RomanNumeral{{Decimal: 1, Roman: "I"}, {Decimal: 2, Roman: "II"}, {Decimal: 3, Roman: "III"}}},
-		{[]int{10, 20, 10}, []models.RomanNumeral{{Decimal: 10, Roman: "X"}, {Decimal: 20, Roman: "XX"}}},
-		{[]int{}, []models.RomanNumeral{}},
-		{[]int{3999}, []models.RomanNumeral{{Decimal: 3999, Roman: "MMMCMXCIX"}}},
+		{[]int{1, 2, 3}, []types.RomanNumeral{{Decimal: 1, Roman: "I"}, {Decimal: 2, Roman: "II"}, {Decimal: 3, Roman: "III"}}},
+		{[]int{10, 20, 10}, []types.RomanNumeral{{Decimal: 10, Roman: "X"}, {Decimal: 20, Roman: "XX"}}},
+		{[]int{}, []types.RomanNumeral{}},
+		{[]int{3999}, []types.RomanNumeral{{Decimal: 3999, Roman: "MMMCMXCIX"}}},
 	}
 
 	for _, test := range tests {
@@ -257,7 +257,7 @@ func equalIntSlices(a, b []int) bool {
 	return true
 }
 
-func equalRomanNumeralSlices(a, b []models.RomanNumeral) bool {
+func equalRomanNumeralSlices(a, b []types.RomanNumeral) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -273,14 +273,14 @@ func equalRomanNumeralSlices(a, b []models.RomanNumeral) bool {
 func TestProcessRanges(t *testing.T) {
 	tests := []struct {
 		name          string
-		input         models.RangesPayload
+		input         types.RangesPayload
 		expected      []int
 		expectedError string
 	}{
 		{
 			name: "ValidRanges",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 1, Max: 5},
 					{Min: 10, Max: 15},
 				},
@@ -290,8 +290,8 @@ func TestProcessRanges(t *testing.T) {
 		},
 		{
 			name: "InvalidRanges_MinGreaterThanMax",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 20, Max: 10},
 				},
 			},
@@ -300,8 +300,8 @@ func TestProcessRanges(t *testing.T) {
 		},
 		{
 			name: "InvalidRanges_OutOfBounds",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 0, Max: 10},
 				},
 			},
@@ -310,7 +310,7 @@ func TestProcessRanges(t *testing.T) {
 		},
 		{
 			name:          "ValidRanges_EmptyRange",
-			input:         models.RangesPayload{},
+			input:         types.RangesPayload{},
 			expected:      []int{},
 			expectedError: "",
 		},
@@ -340,18 +340,18 @@ func TestConvertRangesToRoman(t *testing.T) {
 	tests := []struct {
 		name          string
 		input         interface{}
-		expected      []models.RomanNumeral
+		expected      []types.RomanNumeral
 		queryParams   string
 		expectedError string
 	}{
 		{
 			name: "ValidRanges_Single",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 10, Max: 15},
 				},
 			},
-			expected: []models.RomanNumeral{
+			expected: []types.RomanNumeral{
 				{Decimal: 10, Roman: "X"},
 				{Decimal: 11, Roman: "XI"},
 				{Decimal: 12, Roman: "XII"},
@@ -363,13 +363,13 @@ func TestConvertRangesToRoman(t *testing.T) {
 		},
 		{
 			name: "ValidRanges_Multiple",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 10, Max: 12},
 					{Min: 15, Max: 15},
 				},
 			},
-			expected: []models.RomanNumeral{
+			expected: []types.RomanNumeral{
 				{Decimal: 10, Roman: "X"},
 				{Decimal: 11, Roman: "XI"},
 				{Decimal: 12, Roman: "XII"},
@@ -379,16 +379,16 @@ func TestConvertRangesToRoman(t *testing.T) {
 		},
 		{
 			name: "EmptyRanges",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{},
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{},
 			},
 			expected:      nil,
 			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name: "InvalidRange_OutOfBounds",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 4000, Max: 5000},
 				},
 			},
@@ -404,7 +404,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 		{
 			name: "MissingRangesKey",
 			input: map[string]interface{}{
-				"notRanges": []models.NumberRange{
+				"notRanges": []types.NumberRange{
 					{Min: 10, Max: 15},
 				},
 			},
@@ -414,7 +414,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 		{
 			name: "MissingRangesKey_ExtraKeys",
 			input: map[string]interface{}{
-				"ranges": []models.NumberRange{
+				"ranges": []types.NumberRange{
 					{Min: 10, Max: 15},
 				},
 				"extra": "value",
@@ -487,13 +487,13 @@ func TestConvertRangesToRoman(t *testing.T) {
 		},
 		{
 			name: "ValidRanges_OverlappingRanges",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 10, Max: 12},
 					{Min: 11, Max: 13},
 				},
 			},
-			expected: []models.RomanNumeral{
+			expected: []types.RomanNumeral{
 				{Decimal: 10, Roman: "X"},
 				{Decimal: 11, Roman: "XI"},
 				{Decimal: 12, Roman: "XII"},
@@ -503,8 +503,8 @@ func TestConvertRangesToRoman(t *testing.T) {
 		},
 		{
 			name: "PostWithQueryParams",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 10, Max: 12},
 				},
 			},
@@ -544,10 +544,10 @@ func TestConvertRangesToRoman(t *testing.T) {
 			}
 			var response map[string]interface{}
 			json.Unmarshal(w.Body.Bytes(), &response)
-			var results []models.RomanNumeral
+			var results []types.RomanNumeral
 			for _, r := range response["results"].([]interface{}) {
 				rMap := r.(map[string]interface{})
-				results = append(results, models.RomanNumeral{
+				results = append(results, types.RomanNumeral{
 					Decimal: uint(rMap["number"].(float64)),
 					Roman:   rMap["roman"].(string),
 				})

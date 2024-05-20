@@ -62,6 +62,18 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			expectedResponse: `{"results":[{"number":1,"roman":"I"},{"number":5,"roman":"V"},{"number":10,"roman":"X"}]}`,
 		},
 		{
+			name:             "ValidInput_ZeroPrefixed",
+			queryParam:       "numbers=01,005,00010",
+			expectedStatus:   http.StatusOK,
+			expectedResponse: `{"results":[{"number":1,"roman":"I"},{"number":5,"roman":"V"},{"number":10,"roman":"X"}]}`,
+		},
+		{
+			name:             "ValidInput_PlusPrefixed",
+			queryParam:       "numbers=+01,+005,+10",
+			expectedStatus:   http.StatusOK,
+			expectedResponse: `{"results":[{"number":1,"roman":"I"},{"number":5,"roman":"V"},{"number":10,"roman":"X"}]}`,
+		},
+		{
 			name:             "ValidInput_MultipleUnique",
 			queryParam:       "numbers=1,5,10,5,10,1",
 			expectedStatus:   http.StatusOK,
@@ -72,6 +84,12 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			queryParam:       "numbers=1,abc,10",
 			expectedStatus:   http.StatusBadRequest,
 			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["abc"]}`, roman.NewAppError(roman.CodeInvalidInput).Error()),
+		},
+		{
+			name:             "InvalidInput_Negative",
+			queryParam:       "numbers=-1",
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["-1"]}`, roman.NewAppError(roman.CodeInvalidInput).Error()),
 		},
 		{
 			name:             "InvalidInput_OutOfRange",
@@ -323,6 +341,7 @@ func TestConvertRangesToRoman(t *testing.T) {
 		name          string
 		input         interface{}
 		expected      []models.RomanNumeral
+		queryParams   string
 		expectedError string
 	}{
 		{
@@ -404,6 +423,15 @@ func TestConvertRangesToRoman(t *testing.T) {
 			expectedError: roman.NewAppError(roman.CodeInvalidRangesPayload).Error(),
 		},
 		{
+			name: "InvalidJSON_DuplicateKeys",
+			input: `{
+				"ranges": [{"min": 10, "max": 15}],
+				"ranges": [{"min": 20, "max": 25}]
+			}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidJSONDuplicateKeys).Error(),
+		},
+		{
 			name: "ValidRanges_OverlappingRanges",
 			input: models.RangesPayload{
 				Ranges: []models.NumberRange{
@@ -419,11 +447,28 @@ func TestConvertRangesToRoman(t *testing.T) {
 			},
 			expectedError: "",
 		},
+		{
+			name: "PostWithQueryParams",
+			input: models.RangesPayload{
+				Ranges: []models.NumberRange{
+					{Min: 10, Max: 12},
+				},
+			},
+			queryParams:   "?numbers=123",
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeQueryParamInPostRequest).Error(),
+		},
+		{
+			name:          "PostWithQueryParams_NoJSON",
+			queryParams:   "?ranges=123",
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeQueryParamInPostRequest).Error(),
+		},
 	}
 
 	for _, test := range tests {
 		body, _ := json.Marshal(test.input)
-		req, _ := http.NewRequest("POST", "/convert", bytes.NewBuffer(body))
+		req, _ := http.NewRequest("POST", "/convert"+test.queryParams, bytes.NewBuffer(body))
 		w := httptest.NewRecorder()
 
 		r := gin.Default()

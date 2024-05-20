@@ -124,6 +124,14 @@ func ConvertNumbersToRomanNumerals(numbers []int) []models.RomanNumeral {
 	return results
 }
 
+// Function to check for duplicate `ranges` keys
+func hasDuplicateRangesKey(data string) error {
+	if strings.Count(data, "ranges") > 1 {
+		return NewAppError(CodeInvalidJSONDuplicateKeys)
+	}
+	return nil
+}
+
 // ConvertRangesToRoman handles the API request to convert ranges of numbers to Roman numerals.
 // @Summary Convert ranges of numbers to Roman numerals
 // @Description Convert multiple ranges of numbers to their corresponding Roman numeral representations.
@@ -140,6 +148,18 @@ func ConvertRangesToRoman(c *gin.Context) {
 	rawBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": NewAppError(CodeFailedReadBody).Error()})
+		return
+	}
+
+	// Check for duplicate keys
+	if err := hasDuplicateRangesKey(string(rawBody)); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return error if we detect query parameters
+	if len(c.Request.URL.Query()) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeQueryParamInPostRequest).Error()})
 		return
 	}
 

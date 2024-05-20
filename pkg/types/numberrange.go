@@ -1,4 +1,4 @@
-package models
+package types
 
 // NumberRange struct defines the model for a range of numbers
 type NumberRange struct {

@@ -23,7 +23,7 @@ func TestServerStarts(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	// Send a test request to the server
-	resp, err := http.Get("http://localhost:8001/api/v1/")
+	resp, err := http.Get("http://localhost:8001/")
 	assert.NoError(t, err, "Failed to send request to server")
 	defer resp.Body.Close()
 

@@ -13,7 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api/roman"
-	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/models"
+	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,8 +42,6 @@ func TestConvertNumbersToRoman(t *testing.T) {
 	router := gin.Default()
 	router.GET("/convert", roman.ConvertNumbersToRoman)
 
-	errInvalidInput := fmt.Sprintf(roman.ErrInvalidInput, roman.LowerLimit, roman.UpperLimit)
-
 	// Test cases
 	testCases := []struct {
 		name             string
@@ -64,6 +62,18 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			expectedResponse: `{"results":[{"number":1,"roman":"I"},{"number":5,"roman":"V"},{"number":10,"roman":"X"}]}`,
 		},
 		{
+			name:             "ValidInput_ZeroPrefixed",
+			queryParam:       "numbers=01,005,00010",
+			expectedStatus:   http.StatusOK,
+			expectedResponse: `{"results":[{"number":1,"roman":"I"},{"number":5,"roman":"V"},{"number":10,"roman":"X"}]}`,
+		},
+		{
+			name:             "ValidInput_PlusPrefixed",
+			queryParam:       "numbers=+01,+005,+10",
+			expectedStatus:   http.StatusOK,
+			expectedResponse: `{"results":[{"number":1,"roman":"I"},{"number":5,"roman":"V"},{"number":10,"roman":"X"}]}`,
+		},
+		{
 			name:             "ValidInput_MultipleUnique",
 			queryParam:       "numbers=1,5,10,5,10,1",
 			expectedStatus:   http.StatusOK,
@@ -73,31 +83,37 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			name:             "InvalidInput_NonNumeric",
 			queryParam:       "numbers=1,abc,10",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["abc"]}`, errInvalidInput),
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["abc"]}`, roman.NewAppError(roman.CodeInvalidInput).Error()),
+		},
+		{
+			name:             "InvalidInput_Negative",
+			queryParam:       "numbers=-1",
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["-1"]}`, roman.NewAppError(roman.CodeInvalidInput).Error()),
 		},
 		{
 			name:             "InvalidInput_OutOfRange",
 			queryParam:       "numbers=5000,10000",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, errInvalidInput),
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, roman.NewAppError(roman.CodeInvalidInput).Error()),
 		},
 		{
 			name:             "InvalidInput_MixedOutOfRange",
 			queryParam:       "numbers=1,3,32,5000,10000",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, errInvalidInput),
+			expectedResponse: fmt.Sprintf(`{"error":"%s","invalid_numbers":["5000","10000"]}`, roman.NewAppError(roman.CodeInvalidInput).Error()),
 		},
 		{
 			name:             "MissingQueryParam_NoParam",
 			queryParam:       "",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.ErrMissingNumbersParam),
+			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.NewAppError(roman.CodeMissingNumbersParam).Error()),
 		},
 		{
 			name:             "MissingQueryParam_OtherParam",
 			queryParam:       "number=1,2,3",
 			expectedStatus:   http.StatusBadRequest,
-			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.ErrInvalidParam),
+			expectedResponse: fmt.Sprintf(`{"error": "%s"}`, roman.NewAppError(roman.CodeInvalidParam).Error()),
 		},
 		{
 			name:             "AscendingOrder",
@@ -135,7 +151,7 @@ func TestConvertNumbersToRoman(t *testing.T) {
 			if tc.expectedStatus == http.StatusOK {
 				// Unmarshal response to extract results
 				var response struct {
-					Results []models.RomanNumeral `json:"results"`
+					Results []types.RomanNumeral `json:"results"`
 				}
 				assert.NoError(t, json.Unmarshal(res.Body.Bytes(), &response))
 
@@ -211,12 +227,12 @@ func TestParseNumberList(t *testing.T) {
 func TestConvertNumbersToRomanNumerals(t *testing.T) {
 	tests := []struct {
 		input    []int
-		expected []models.RomanNumeral
+		expected []types.RomanNumeral
 	}{
-		{[]int{1, 2, 3}, []models.RomanNumeral{{Decimal: 1, Roman: "I"}, {Decimal: 2, Roman: "II"}, {Decimal: 3, Roman: "III"}}},
-		{[]int{10, 20, 10}, []models.RomanNumeral{{Decimal: 10, Roman: "X"}, {Decimal: 20, Roman: "XX"}}},
-		{[]int{}, []models.RomanNumeral{}},
-		{[]int{3999}, []models.RomanNumeral{{Decimal: 3999, Roman: "MMMCMXCIX"}}},
+		{[]int{1, 2, 3}, []types.RomanNumeral{{Decimal: 1, Roman: "I"}, {Decimal: 2, Roman: "II"}, {Decimal: 3, Roman: "III"}}},
+		{[]int{10, 20, 10}, []types.RomanNumeral{{Decimal: 10, Roman: "X"}, {Decimal: 20, Roman: "XX"}}},
+		{[]int{}, []types.RomanNumeral{}},
+		{[]int{3999}, []types.RomanNumeral{{Decimal: 3999, Roman: "MMMCMXCIX"}}},
 	}
 
 	for _, test := range tests {
@@ -241,7 +257,7 @@ func equalIntSlices(a, b []int) bool {
 	return true
 }
 
-func equalRomanNumeralSlices(a, b []models.RomanNumeral) bool {
+func equalRomanNumeralSlices(a, b []types.RomanNumeral) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -257,14 +273,14 @@ func equalRomanNumeralSlices(a, b []models.RomanNumeral) bool {
 func TestProcessRanges(t *testing.T) {
 	tests := []struct {
 		name          string
-		input         models.RangesPayload
+		input         types.RangesPayload
 		expected      []int
 		expectedError string
 	}{
 		{
 			name: "ValidRanges",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 1, Max: 5},
 					{Min: 10, Max: 15},
 				},
@@ -274,27 +290,27 @@ func TestProcessRanges(t *testing.T) {
 		},
 		{
 			name: "InvalidRanges_MinGreaterThanMax",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 20, Max: 10},
 				},
 			},
 			expected:      nil,
-			expectedError: fmt.Sprintf(roman.ErrInvalidRange, roman.LowerLimit, roman.UpperLimit),
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name: "InvalidRanges_OutOfBounds",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 0, Max: 10},
 				},
 			},
 			expected:      nil,
-			expectedError: fmt.Sprintf(roman.ErrInvalidRange, roman.LowerLimit, roman.UpperLimit),
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name:          "ValidRanges_EmptyRange",
-			input:         models.RangesPayload{},
+			input:         types.RangesPayload{},
 			expected:      []int{},
 			expectedError: "",
 		},
@@ -324,17 +340,18 @@ func TestConvertRangesToRoman(t *testing.T) {
 	tests := []struct {
 		name          string
 		input         interface{}
-		expected      []models.RomanNumeral
+		expected      []types.RomanNumeral
+		queryParams   string
 		expectedError string
 	}{
 		{
 			name: "ValidRanges_Single",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 10, Max: 15},
 				},
 			},
-			expected: []models.RomanNumeral{
+			expected: []types.RomanNumeral{
 				{Decimal: 10, Roman: "X"},
 				{Decimal: 11, Roman: "XI"},
 				{Decimal: 12, Roman: "XII"},
@@ -346,13 +363,13 @@ func TestConvertRangesToRoman(t *testing.T) {
 		},
 		{
 			name: "ValidRanges_Multiple",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 10, Max: 12},
 					{Min: 15, Max: 15},
 				},
 			},
-			expected: []models.RomanNumeral{
+			expected: []types.RomanNumeral{
 				{Decimal: 10, Roman: "X"},
 				{Decimal: 11, Roman: "XI"},
 				{Decimal: 12, Roman: "XII"},
@@ -362,58 +379,121 @@ func TestConvertRangesToRoman(t *testing.T) {
 		},
 		{
 			name: "EmptyRanges",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{},
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{},
 			},
 			expected:      nil,
-			expectedError: roman.ErrEmptyRanges,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name: "InvalidRange_OutOfBounds",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 4000, Max: 5000},
 				},
 			},
 			expected:      nil,
-			expectedError: fmt.Sprintf(roman.ErrInvalidRange, roman.LowerLimit, roman.UpperLimit),
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name:          "InvalidJSON",
 			input:         "invalid json",
 			expected:      nil,
-			expectedError: roman.ErrInvalidJSONPayload,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name: "MissingRangesKey",
 			input: map[string]interface{}{
-				"notRanges": []models.NumberRange{
+				"notRanges": []types.NumberRange{
 					{Min: 10, Max: 15},
 				},
 			},
 			expected:      nil,
-			expectedError: roman.ErrInvalidRangesPayload,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
 		},
 		{
 			name: "MissingRangesKey_ExtraKeys",
 			input: map[string]interface{}{
-				"ranges": []models.NumberRange{
+				"ranges": []types.NumberRange{
 					{Min: 10, Max: 15},
 				},
 				"extra": "value",
 			},
 			expected:      nil,
-			expectedError: roman.ErrInvalidRangesPayload,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name:          "InvalidJSON_EmptyRangeArray",
+			input:         `{"ranges":[]}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name:          "InvalidJSON_EmptyRange",
+			input:         `{"ranges":{}}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name:          "InvalidJSON_EmptyMinMax",
+			input:         `{"ranges":["min":{}, "max":{}]}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name:          "InvalidJSON_EmptyMax",
+			input:         `{"ranges":["min":1, "max":{}]}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name:          "InvalidJSON_EmptyMin",
+			input:         `{"ranges":["min":{}, "max":1]}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name:          "InvalidJSON_ZeroMin",
+			input:         `{"ranges":["min":0, "max":1]}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name:          "InvalidJSON_ZeroPrefixed",
+			input:         `{"ranges":["min":01, "max":10]}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name:          "InvalidJSON_Unicode",
+			input:         `¦@¦##§°°§°`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name:          "InvalidJSON_DuplicateKeys",
+			input:         `{"ranges":[]}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidRange).Error(),
+		},
+		{
+			name: "InvalidJSON_DuplicateKeys",
+			input: `{
+				"ranges": [{"min": 10, "max": 15}],
+				"ranges": [{"min": 20, "max": 25}]
+			}`,
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeInvalidJSONDuplicateKeys).Error(),
 		},
 		{
 			name: "ValidRanges_OverlappingRanges",
-			input: models.RangesPayload{
-				Ranges: []models.NumberRange{
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
 					{Min: 10, Max: 12},
 					{Min: 11, Max: 13},
 				},
 			},
-			expected: []models.RomanNumeral{
+			expected: []types.RomanNumeral{
 				{Decimal: 10, Roman: "X"},
 				{Decimal: 11, Roman: "XI"},
 				{Decimal: 12, Roman: "XII"},
@@ -421,11 +501,28 @@ func TestConvertRangesToRoman(t *testing.T) {
 			},
 			expectedError: "",
 		},
+		{
+			name: "PostWithQueryParams",
+			input: types.RangesPayload{
+				Ranges: []types.NumberRange{
+					{Min: 10, Max: 12},
+				},
+			},
+			queryParams:   "?numbers=123",
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeQueryParamInPostRequest).Error(),
+		},
+		{
+			name:          "PostWithQueryParams_NoJSON",
+			queryParams:   "?ranges=123",
+			expected:      nil,
+			expectedError: roman.NewAppError(roman.CodeQueryParamInPostRequest).Error(),
+		},
 	}
 
 	for _, test := range tests {
 		body, _ := json.Marshal(test.input)
-		req, _ := http.NewRequest("POST", "/convert", bytes.NewBuffer(body))
+		req, _ := http.NewRequest("POST", "/convert"+test.queryParams, bytes.NewBuffer(body))
 		w := httptest.NewRecorder()
 
 		r := gin.Default()
@@ -434,12 +531,12 @@ func TestConvertRangesToRoman(t *testing.T) {
 
 		if test.expectedError != "" {
 			if w.Code != http.StatusBadRequest {
-				t.Errorf("Expected status %v; got %v", http.StatusBadRequest, w.Code)
+				t.Errorf("%s: Expected status %v; got %v", test.name, http.StatusBadRequest, w.Code)
 			}
 			var response map[string]interface{}
 			json.Unmarshal(w.Body.Bytes(), &response)
 			if response["error"] != test.expectedError {
-				t.Errorf("Expected error %v; got %v", test.expectedError, response["error"])
+				t.Errorf("%s: Expected error %v; got %v", test.name, test.expectedError, response["error"])
 			}
 		} else {
 			if w.Code != http.StatusOK {
@@ -447,10 +544,10 @@ func TestConvertRangesToRoman(t *testing.T) {
 			}
 			var response map[string]interface{}
 			json.Unmarshal(w.Body.Bytes(), &response)
-			var results []models.RomanNumeral
+			var results []types.RomanNumeral
 			for _, r := range response["results"].([]interface{}) {
 				rMap := r.(map[string]interface{})
-				results = append(results, models.RomanNumeral{
+				results = append(results, types.RomanNumeral{
 					Decimal: uint(rMap["number"].(float64)),
 					Roman:   rMap["roman"].(string),
 				})

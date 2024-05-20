@@ -1,16 +1,16 @@
-package models_test
+package types_test
 
 import (
 	"encoding/json"
 	"testing"
 
-	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/models"
+	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNumberRangeJSONMarshalling(t *testing.T) {
 	// Create a sample NumberRange instance
-	numberRange := models.NumberRange{
+	numberRange := types.NumberRange{
 		Min: 10,
 		Max: 20,
 	}
@@ -20,7 +20,7 @@ func TestNumberRangeJSONMarshalling(t *testing.T) {
 	assert.NoError(t, err, "Error marshalling NumberRange to JSON")
 
 	// Unmarshal the JSON data back to a NumberRange instance
-	var unmarshalledNumberRange models.NumberRange
+	var unmarshalledNumberRange types.NumberRange
 	err = json.Unmarshal(jsonData, &unmarshalledNumberRange)
 	assert.NoError(t, err, "Error unmarshalling JSON to NumberRange")
 
@@ -30,8 +30,8 @@ func TestNumberRangeJSONMarshalling(t *testing.T) {
 
 func TestRangesPayloadJSONMarshalling(t *testing.T) {
 	// Create a sample RangesPayload instance
-	rangesPayload := models.RangesPayload{
-		Ranges: []models.NumberRange{
+	rangesPayload := types.RangesPayload{
+		Ranges: []types.NumberRange{
 			{Min: 10, Max: 20},
 			{Min: 30, Max: 40},
 		},
@@ -42,7 +42,7 @@ func TestRangesPayloadJSONMarshalling(t *testing.T) {
 	assert.NoError(t, err, "Error marshalling RangesPayload to JSON")
 
 	// Unmarshal the JSON data back to a RangesPayload instance
-	var unmarshalledRangesPayload models.RangesPayload
+	var unmarshalledRangesPayload types.RangesPayload
 	err = json.Unmarshal(jsonData, &unmarshalledRangesPayload)
 	assert.NoError(t, err, "Error unmarshalling JSON to RangesPayload")
 

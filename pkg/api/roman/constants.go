@@ -4,14 +4,12 @@ const (
 	LowerLimit = 1
 	UpperLimit = 3999
 
-	// Error messages
-	ErrInvalidParam         = "only 'numbers' query parameter is allowed"
-	ErrMissingNumbersParam  = "the 'numbers' query parameter is required"
-	ErrInvalidInput         = "invalid input: please provide valid integers within the supported range (%d-%d)"
-	ErrOutOfBounds          = "input out of bounds, must be between %d and %d"
-	ErrFailedReadBody       = "failed to read request body"
-	ErrInvalidJSONPayload   = "invalid JSON payload"
-	ErrInvalidRangesPayload = "invalid JSON payload: expected only 'ranges' key with an array value"
-	ErrEmptyRanges          = "empty 'ranges': provide valid min and max values for the ranges"
-	ErrInvalidRange         = "invalid range: each range must be within %d to %d and min should not be greater than max"
+	CodeInvalidParam             = "ERR1000"
+	CodeMissingNumbersParam      = "ERR1001"
+	CodeInvalidInput             = "ERR1002"
+	CodeOutOfBounds              = "ERR1003"
+	CodeFailedReadBody           = "ERR1004"
+	CodeInvalidRange             = "ERR1005"
+	CodeInvalidJSONDuplicateKeys = "ERR1006"
+	CodeQueryParamInPostRequest  = "ERR1007"
 )

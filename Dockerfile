@@ -9,12 +9,20 @@ RUN swag init
 RUN CGO_ENABLED=1 go build -o bin/main main.go
 
 # Stage 2: Tester
-FROM builder AS tester
+FROM golang:1.21.10 AS tester
 WORKDIR /app
-COPY tests/ tests/
-CMD ["go", "test", "./tests/..."]
+COPY --from=builder /app /app
+CMD ["sh", "-c", "go test ./..."]
 
-# Stage 3: Final Image
+# Stage 3: Tester and Coverage Generator
+FROM golang:1.21.10 AS coverage
+WORKDIR /app
+COPY --from=builder /app /app
+RUN mkdir -p /coverage
+CMD ["sh", "-c", "go test ./... -coverprofile=/coverage/coverage.out && go tool cover -html=/coverage/coverage.out -o /coverage/coverage.html"]
+
+
+# Stage 4: Final Image
 FROM golang:1.21.10
 WORKDIR /app
 COPY --from=builder /app/bin/main ./bin/main

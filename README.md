@@ -284,7 +284,7 @@ The tests are written using the Go testing package and the Gin web framework. Th
     - Expected results: `10` to `X`, `11` to `XI`, `12` to `XII`, `14` to `XIV`, `15` to `XV`, `16` to `XVI`.
 
 2. **Invalid Inputs**: Tests the response for various invalid range inputs.
-    - Example: Empty ranges, non-integer values, negative values, max less than min.
+    - Example: Empty ranges, non-integer values, negative values, max less than min, invalid jsons etc.
 
 3. **Edge Cases**: Tests various edge cases for the range inputs.
     - Example: Single number range, very small range, maximum valid range, overlapping large ranges, reverse order ranges.

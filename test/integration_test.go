@@ -165,8 +165,22 @@ func TestConvertRangesHandlerInvalid(t *testing.T) {
 // Test cases for edge cases for POST /convert endpoint
 func TestConvertRangesHandlerEdgeCases(t *testing.T) {
 	router := SetupRouter()
-
 	testCases := getRangesEdgeTestCases()
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := performPostRequest(router, BasePath, tc.payload)
+			checkStatus(t, w, tc.expectedStatus)
+			checkPostResponse(t, w, tc.expectedResult)
+
+		})
+	}
+}
+
+func TestConvertRangesHandlerEdgeCaseMaxValidRange(t *testing.T) {
+	router := SetupRouter()
+
+	testCases := getRangesEdgeTestCaseeMaxValidRange()
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -185,27 +199,16 @@ func TestConvertRangesHandlerEdgeCases(t *testing.T) {
 				return
 			}
 
-			if len(response.Results) != len(tc.expectedResult) && tc.name != "MaxValidRange" {
-				t.Errorf("handler returned unexpected number of results: got %v want %v", len(response.Results), len(tc.expectedResult))
+			if len(response.Results) != 3999 {
+				t.Errorf("handler returned unexpected number of results: got %v want %v", len(response.Results), 3999)
+			}
+			if response.Results[0].Number != 1 || response.Results[0].Roman != "I" {
+				t.Errorf("handler returned unexpected first result: got {number: %d, roman: %s} want {number: 1, roman: I}", response.Results[0].Number, response.Results[0].Roman)
+			}
+			if response.Results[3998].Number != 3999 || response.Results[3998].Roman != "MMMCMXCIX" {
+				t.Errorf("handler returned unexpected last result: got {number: %d, roman: %s} want {number: 3999, roman: MMMCMXCIX}", response.Results[3998].Number, response.Results[3998].Roman)
 			}
 
-			if tc.name == "MaxValidRange" {
-				if len(response.Results) != 3999 {
-					t.Errorf("handler returned unexpected number of results: got %v want %v", len(response.Results), 3999)
-				}
-				if response.Results[0].Number != 1 || response.Results[0].Roman != "I" {
-					t.Errorf("handler returned unexpected first result: got {number: %d, roman: %s} want {number: 1, roman: I}", response.Results[0].Number, response.Results[0].Roman)
-				}
-				if response.Results[3998].Number != 3999 || response.Results[3998].Roman != "MMMCMXCIX" {
-					t.Errorf("handler returned unexpected last result: got {number: %d, roman: %s} want {number: 3999, roman: MMMCMXCIX}", response.Results[3998].Number, response.Results[3998].Roman)
-				}
-			} else {
-				for i, result := range response.Results {
-					if result.Number != tc.expectedResult[i].Number || result.Roman != tc.expectedResult[i].Roman {
-						t.Errorf("handler returned unexpected result at index %d: got {number: %d, roman: %s} want {number: %d, roman: %s}", i, result.Number, result.Roman, tc.expectedResult[i].Number, tc.expectedResult[i].Roman)
-					}
-				}
-			}
 		})
 	}
 }

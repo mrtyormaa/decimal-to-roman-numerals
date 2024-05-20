@@ -24,7 +24,10 @@ func SetupRouter() *gin.Engine {
 // Helper function to perform a POST request and return the response recorder
 func performPostRequest(router *gin.Engine, url string, payload interface{}) *httptest.ResponseRecorder {
 	w := httptest.NewRecorder()
-	jsonPayload, _ := json.Marshal(payload)
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		panic("1")
+	}
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
@@ -253,6 +256,196 @@ func getRangesInvalidTestCases() []struct {
 			},
 			expectedStatus: http.StatusBadRequest,
 		},
+		{
+			name: "InvalidRange_OutOfBounds",
+			payload: struct {
+				Ranges []struct {
+					Min int `json:"min"`
+					Max int `json:"max"`
+				} `json:"ranges"`
+			}{
+				Ranges: []struct {
+					Min int `json:"min"`
+					Max int `json:"max"`
+				}{
+					{Min: 4000, Max: 5000},
+				},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "InvalidJSON",
+			payload:        "invalid json",
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "MissingRangesKey",
+			payload: map[string]interface{}{
+				"notRanges": []struct {
+					Min int `json:"min"`
+					Max int `json:"max"`
+				}{
+					{Min: 10, Max: 15},
+				},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "MissingRangesKey_ExtraKeys",
+			payload: map[string]interface{}{
+				"ranges": []struct {
+					Min int `json:"min"`
+					Max int `json:"max"`
+				}{
+					{Min: 10, Max: 15},
+				},
+				"extra": "value",
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "InvalidJSON_EmptyRangeArray",
+			payload:        `{"ranges":[]}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidJSON_EmptyRange",
+			payload: map[string]interface{}{
+				"ranges": []map[string]interface{}{},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidJSON_EmptyMinMax",
+			payload: map[string]interface{}{
+				"ranges": []map[string]interface{}{
+					{"min": nil, "max": nil},
+				},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidJSON_EmptyMax",
+			payload: map[string]interface{}{
+				"ranges": []map[string]interface{}{
+					{"min": 1, "max": nil},
+				},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidJSON_EmptyMin",
+			payload: map[string]interface{}{
+				"ranges": []map[string]interface{}{
+					{"min": nil, "max": 15},
+				},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidJSON_ZeroMin",
+			payload: map[string]interface{}{
+				"ranges": []struct {
+					Min int `json:"min"`
+					Max int `json:"max"`
+				}{
+					{Min: 0, Max: 15},
+				},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidJSON_ZeroPrefixed",
+			payload: map[string]interface{}{
+				"ranges": []struct {
+					Min string `json:"min"`
+					Max int    `json:"max"`
+				}{
+					{Min: "01", Max: 15},
+				},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidJSON_PlusPrefixed",
+			payload: map[string]interface{}{
+				"ranges": []struct {
+					Min string `json:"min"`
+					Max int    `json:"max"`
+				}{
+					{Min: "+1", Max: 15},
+				},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "InvalidJSON_Unicode",
+			payload:        `¦@¦##§°°§°`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidJSON_DuplicateKeys",
+			payload: map[string]interface{}{
+				"ranges": []struct {
+					Min int `json:"min"`
+					Max int `json:"max"`
+				}{},
+			},
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "InvalidJSON_DuplicateKeys",
+			payload: `{
+				"ranges": [{"min": 10, "max": 15}],
+				"ranges": [{"min": 20, "max": 25}]
+			}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+	}
+}
+
+func getRangesEdgeTestCaseeMaxValidRange() []struct {
+	name           string
+	payload        interface{}
+	expectedStatus int
+	expectedResult []struct {
+		Number int
+		Roman  string
+	}
+} {
+	return []struct {
+		name           string
+		payload        interface{}
+		expectedStatus int
+		expectedResult []struct {
+			Number int
+			Roman  string
+		}
+	}{
+		{
+			name: "MaxValidRange",
+			payload: struct {
+				Ranges []struct {
+					Min int `json:"min"`
+					Max int `json:"max"`
+				} `json:"ranges"`
+			}{
+				Ranges: []struct {
+					Min int `json:"min"`
+					Max int `json:"max"`
+				}{
+					{Min: 1, Max: 3999},
+				},
+			},
+			expectedStatus: http.StatusOK,
+			expectedResult: []struct {
+				Number int
+				Roman  string
+			}{
+				{1, "I"},
+				{3999, "MMMCMXCIX"},
+			},
+		},
 	}
 }
 
@@ -320,30 +513,6 @@ func getRangesEdgeTestCases() []struct {
 			}{
 				{101, "CI"},
 				{102, "CII"},
-			},
-		},
-		{
-			name: "MaxValidRange",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 1, Max: 3999},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{1, "I"},
-				{3999, "MMMCMXCIX"},
 			},
 		},
 		{

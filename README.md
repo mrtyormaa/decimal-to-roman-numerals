@@ -345,6 +345,33 @@ Each test distributes a total of 1000 requests across multiple goroutines to sim
 - Status Code: Should be 200 OK.
 - Response Body: Should correctly reflect the expected Roman numeral conversions for the provided ranges.
 
+## CI/CD Process
+
+### Automated Release
+
+This workflow is designed to automate the creation of GitHub Releases. It adheres to [Semantic Versioning](https://semver.org/), which is a versioning scheme that uses a three-part version number: `MAJOR.MINOR.PATCH`. This workflow is triggered whenever a commit tag that starts with "v" (e.g., "v1.0.0", "v0.1.4") is pushed to the repository. The workflow performs the following steps:
+
+- **Trigger:** Executes on every push to a tag that matches the pattern "v*".
+- **Job Name:** Release
+- **Environment:** Runs on the latest Ubuntu environment.
+- **Action:** Utilizes the `marvinpinto/action-automatic-releases` action to create a GitHub Release with the details of the relevant commits.
+- **Authentication:** Uses the GitHub token stored in the repository secrets to authenticate the release creation.
+
+### Test and Coverage
+
+This workflow ensures code quality by running tests and collecting coverage data. It is triggered on every push and pull request. The workflow performs the following steps:
+
+- **Trigger:** Executes on every push to the repository and on every pull request.
+- **Job Name:** Build
+- **Environment:** Runs on the latest Ubuntu environment.
+- **Steps:**
+  - **Checkout Code:** Uses the `actions/checkout` action to check out the repository code.
+  - **Set Up Go Environment:** Uses the `actions/setup-go` action to set up a Go environment with the latest stable version.
+  - **Gather Dependencies:** Downloads the Go module dependencies.
+  - **Run Tests and Coverage:** Executes tests with race condition detection and generates a coverage profile.
+  - **Upload Coverage:** Uses the `codecov/codecov-action` to upload the coverage report to Codecov, using the Codecov token stored in the repository secrets.
+
+
 ## TODOs
 
 - [ ] Authentication!

@@ -11,7 +11,7 @@ import (
 // Perform total 1000 requests, distributed among the goroutines
 // Check the status code and validate the response body
 func TestConvertHandlerLoad(t *testing.T) {
-	router := SetupLoadRouter()
+	router := SetupRouter()
 	numRequests := 1000
 	concurrency := 10
 	var wg sync.WaitGroup
@@ -60,7 +60,7 @@ func TestConvertHandlerLoad(t *testing.T) {
 // Perform total 1000 requests, distributed among the goroutines
 // Check the status code and validate the response body
 func TestConvertRangesHandlerLoad(t *testing.T) {
-	router := SetupLoadRouter()
+	router := SetupRouter()
 	numRequests := 1000
 	concurrency := 10
 	var wg sync.WaitGroup

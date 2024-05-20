@@ -6,15 +6,8 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
-
-	"github.com/gin-gonic/gin"
-	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api"
+	"unicode"
 )
-
-// SetupRouter sets up the Gin router for testing
-func SetupRouter() *gin.Engine {
-	return api.InitRouter()
-}
 
 // Helper function to check the response status code
 func checkStatus(t *testing.T, w *httptest.ResponseRecorder, expectedStatus int) {
@@ -92,14 +85,75 @@ func TestConvertHandlerValid(t *testing.T) {
 	}
 }
 
+// Converts an integer to Roman string
+func intToRoman(num int) string {
+	thousands := []string{"", "M", "MM", "MMM"}
+	hundreds := []string{"", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"}
+	tens := []string{"", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"}
+	ones := []string{"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"}
+
+	roman := ""
+	roman += thousands[num/1000]
+	roman += hundreds[(num%1000)/100]
+	roman += tens[(num%100)/10]
+	roman += ones[num%10]
+
+	return roman
+}
+
+// Generate and test all 3999 numbers with a different algorithm to verify the algorithm validity
+func TestConvertHandlerValidAnotherAlgorithm(t *testing.T) {
+	router := SetupRouter()
+
+	for i := 1; i <= 3999; i++ {
+		t.Run("Valid_"+strconv.Itoa(i), func(t *testing.T) {
+			w := performRequest(router, BasePath+"?numbers="+strconv.Itoa(i))
+			checkStatus(t, w, http.StatusOK)
+			checkResponse(t, w, i, intToRoman(i))
+		})
+	}
+}
+
+func TestConvertHandlerValidSpecial(t *testing.T) {
+	router := SetupRouter()
+	testCases := []struct {
+		params   string
+		number   int
+		expected string
+	}{
+		{"01", 1, "I"},
+		{"   04   ", 4, "IV"},
+		{"+9", 9, "IX"},
+	}
+
+	for _, tc := range testCases {
+		t.Run("Valid_"+tc.params, func(t *testing.T) {
+			w := performRequest(router, BasePath+"?numbers="+tc.params)
+			checkStatus(t, w, http.StatusOK)
+			checkResponse(t, w, tc.number, tc.expected)
+		})
+	}
+}
+
+// Generates all unicodes except numbers
+func generateAllUnicodeCharsExceptNumbers() []string {
+	var unicodeChars []string
+	for i := rune(0); i <= unicode.MaxRune; i++ {
+		if unicode.IsGraphic(i) && !unicode.IsNumber(i) {
+			unicodeChars = append(unicodeChars, string(i))
+		}
+	}
+	return unicodeChars
+}
+
 // Test cases for invalid inputs for GET /api/v1/convert
 func TestConvertHandlerInvalid(t *testing.T) {
 	router := SetupRouter()
 	testCases := []string{
-		"abc",
-		"-1",
-		"4000",
+		"abc", "-1", "4000", "+0", "-1", "%1", "/1", "//1", "\\1", "~1", "^1",
+		"°1", "1+2",
 	}
+	testCases = append(testCases, generateAllUnicodeCharsExceptNumbers()...)
 
 	for _, tc := range testCases {
 		t.Run("Invalid_"+tc, func(t *testing.T) {
@@ -145,131 +199,7 @@ func TestConvertHandlerPerformance(t *testing.T) {
 func TestConvertRangesHandlerValid(t *testing.T) {
 	router := SetupRouter()
 
-	testCases := []struct {
-		name           string
-		payload        interface{}
-		expectedStatus int
-		expectedResult []struct {
-			Number int
-			Roman  string
-		}
-	}{
-		{
-			name: "MultipleRanges",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 10, Max: 12},
-					{Min: 14, Max: 16},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{10, "X"},
-				{11, "XI"},
-				{12, "XII"},
-				{14, "XIV"},
-				{15, "XV"},
-				{16, "XVI"},
-			},
-		},
-		{
-			name: "OverlappingRanges",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 5, Max: 10},
-					{Min: 8, Max: 12},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{5, "V"},
-				{6, "VI"},
-				{7, "VII"},
-				{8, "VIII"},
-				{9, "IX"},
-				{10, "X"},
-				{11, "XI"},
-				{12, "XII"},
-			},
-		},
-		{
-			name: "OutOfOrderRanges",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 15, Max: 18},
-					{Min: 10, Max: 12},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{10, "X"},
-				{11, "XI"},
-				{12, "XII"},
-				{15, "XV"},
-				{16, "XVI"},
-				{17, "XVII"},
-				{18, "XVIII"},
-			},
-		},
-		{
-			name: "BoundaryValues",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 1, Max: 1},
-					{Min: 3999, Max: 3999},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{1, "I"},
-				{3999, "MMMCMXCIX"},
-			},
-		},
-	}
+	testCases := getRangesValidTestCases()
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -284,78 +214,7 @@ func TestConvertRangesHandlerValid(t *testing.T) {
 func TestConvertRangesHandlerInvalid(t *testing.T) {
 	router := SetupRouter()
 
-	testCases := []struct {
-		name           string
-		payload        interface{}
-		expectedStatus int
-	}{
-		{
-			name: "EmptyRanges",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{},
-			},
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name: "NonIntegerValues",
-			payload: struct {
-				Ranges []struct {
-					Min string `json:"min"`
-					Max string `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min string `json:"min"`
-					Max string `json:"max"`
-				}{
-					{Min: "a", Max: "z"},
-				},
-			},
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name: "NegativeValues",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: -1, Max: 5},
-				},
-			},
-			expectedStatus: http.StatusBadRequest,
-		},
-		{
-			name: "MaxLessThanMin",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 10, Max: 5},
-				},
-			},
-			expectedStatus: http.StatusBadRequest,
-		},
-	}
+	testCases := getRangesInvalidTestCases()
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -368,162 +227,22 @@ func TestConvertRangesHandlerInvalid(t *testing.T) {
 // Test cases for edge cases for POST /convert endpoint
 func TestConvertRangesHandlerEdgeCases(t *testing.T) {
 	router := SetupRouter()
+	testCases := getRangesEdgeTestCases()
 
-	testCases := []struct {
-		name           string
-		payload        interface{}
-		expectedStatus int
-		expectedResult []struct {
-			Number int
-			Roman  string
-		}
-	}{
-		{
-			name: "SingleNumberRange",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 50, Max: 50},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{50, "L"},
-			},
-		},
-		{
-			name: "VerySmallRange",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 101, Max: 102},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{101, "CI"},
-				{102, "CII"},
-			},
-		},
-		{
-			name: "MaxValidRange",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 1, Max: 3999},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{1, "I"},
-				{3999, "MMMCMXCIX"},
-			},
-		},
-		{
-			name: "OverlappingLargeRange",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 10, Max: 20},
-					{Min: 15, Max: 25},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{10, "X"},
-				{11, "XI"},
-				{12, "XII"},
-				{13, "XIII"},
-				{14, "XIV"},
-				{15, "XV"},
-				{16, "XVI"},
-				{17, "XVII"},
-				{18, "XVIII"},
-				{19, "XIX"},
-				{20, "XX"},
-				{21, "XXI"},
-				{22, "XXII"},
-				{23, "XXIII"},
-				{24, "XXIV"},
-				{25, "XXV"},
-			},
-		},
-		{
-			name: "ReverseOrderRanges",
-			payload: struct {
-				Ranges []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				} `json:"ranges"`
-			}{
-				Ranges: []struct {
-					Min int `json:"min"`
-					Max int `json:"max"`
-				}{
-					{Min: 20, Max: 25},
-					{Min: 10, Max: 15},
-				},
-			},
-			expectedStatus: http.StatusOK,
-			expectedResult: []struct {
-				Number int
-				Roman  string
-			}{
-				{10, "X"},
-				{11, "XI"},
-				{12, "XII"},
-				{13, "XIII"},
-				{14, "XIV"},
-				{15, "XV"},
-				{20, "XX"},
-				{21, "XXI"},
-				{22, "XXII"},
-				{23, "XXIII"},
-				{24, "XXIV"},
-				{25, "XXV"},
-			},
-		},
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := performPostRequest(router, BasePath, tc.payload)
+			checkStatus(t, w, tc.expectedStatus)
+			checkPostResponse(t, w, tc.expectedResult)
+
+		})
 	}
+}
+
+func TestConvertRangesHandlerEdgeCaseMaxValidRange(t *testing.T) {
+	router := SetupRouter()
+
+	testCases := getRangesEdgeTestCaseeMaxValidRange()
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -542,27 +261,16 @@ func TestConvertRangesHandlerEdgeCases(t *testing.T) {
 				return
 			}
 
-			if len(response.Results) != len(tc.expectedResult) && tc.name != "MaxValidRange" {
-				t.Errorf("handler returned unexpected number of results: got %v want %v", len(response.Results), len(tc.expectedResult))
+			if len(response.Results) != 3999 {
+				t.Errorf("handler returned unexpected number of results: got %v want %v", len(response.Results), 3999)
+			}
+			if response.Results[0].Number != 1 || response.Results[0].Roman != "I" {
+				t.Errorf("handler returned unexpected first result: got {number: %d, roman: %s} want {number: 1, roman: I}", response.Results[0].Number, response.Results[0].Roman)
+			}
+			if response.Results[3998].Number != 3999 || response.Results[3998].Roman != "MMMCMXCIX" {
+				t.Errorf("handler returned unexpected last result: got {number: %d, roman: %s} want {number: 3999, roman: MMMCMXCIX}", response.Results[3998].Number, response.Results[3998].Roman)
 			}
 
-			if tc.name == "MaxValidRange" {
-				if len(response.Results) != 3999 {
-					t.Errorf("handler returned unexpected number of results: got %v want %v", len(response.Results), 3999)
-				}
-				if response.Results[0].Number != 1 || response.Results[0].Roman != "I" {
-					t.Errorf("handler returned unexpected first result: got {number: %d, roman: %s} want {number: 1, roman: I}", response.Results[0].Number, response.Results[0].Roman)
-				}
-				if response.Results[3998].Number != 3999 || response.Results[3998].Roman != "MMMCMXCIX" {
-					t.Errorf("handler returned unexpected last result: got {number: %d, roman: %s} want {number: 3999, roman: MMMCMXCIX}", response.Results[3998].Number, response.Results[3998].Roman)
-				}
-			} else {
-				for i, result := range response.Results {
-					if result.Number != tc.expectedResult[i].Number || result.Roman != tc.expectedResult[i].Roman {
-						t.Errorf("handler returned unexpected result at index %d: got {number: %d, roman: %s} want {number: %d, roman: %s}", i, result.Number, result.Roman, tc.expectedResult[i].Number, tc.expectedResult[i].Roman)
-					}
-				}
-			}
 		})
 	}
 }

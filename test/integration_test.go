@@ -85,6 +85,35 @@ func TestConvertHandlerValid(t *testing.T) {
 	}
 }
 
+// Converts an integer to Roman string
+func intToRoman(num int) string {
+	thousands := []string{"", "M", "MM", "MMM"}
+	hundreds := []string{"", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM"}
+	tens := []string{"", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC"}
+	ones := []string{"", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"}
+
+	roman := ""
+	roman += thousands[num/1000]
+	roman += hundreds[(num%1000)/100]
+	roman += tens[(num%100)/10]
+	roman += ones[num%10]
+
+	return roman
+}
+
+// Generate and test all 3999 numbers with a different algorithm to verify the algorithm validity
+func TestConvertHandlerValidAnotherAlgorithm(t *testing.T) {
+	router := SetupRouter()
+
+	for i := 1; i <= 3999; i++ {
+		t.Run("Valid_"+strconv.Itoa(i), func(t *testing.T) {
+			w := performRequest(router, BasePath+"?numbers="+strconv.Itoa(i))
+			checkStatus(t, w, http.StatusOK)
+			checkResponse(t, w, i, intToRoman(i))
+		})
+	}
+}
+
 func TestConvertHandlerValidSpecial(t *testing.T) {
 	router := SetupRouter()
 	testCases := []struct {

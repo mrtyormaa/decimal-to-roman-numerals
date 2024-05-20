@@ -287,6 +287,8 @@ The tests are written using the Go testing package and the Gin web framework. Th
 
 4. **Performance**: Tests the performance of the handler under a load of 1000 requests.
 
+4. **Correctness**: Tests the conversion of various integers to Roman numerals using a different algorithm.
+
 ##### POST /convert
 
 1. **Valid Inputs**: Tests the conversion of ranges of integers to Roman numerals.

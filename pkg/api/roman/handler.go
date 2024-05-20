@@ -188,7 +188,7 @@ func ConvertRangesToRoman(c *gin.Context) {
 	var rangesPayload types.RangesPayload
 	rangesDataJSON, _ := json.Marshal(rangesData)
 	if err := json.Unmarshal(rangesDataJSON, &rangesPayload.Ranges); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid 'ranges' data."})
+		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRange).Error()})
 		return
 	}
 

@@ -10,36 +10,29 @@ The following assumptions to help in reaching some concrete actionable plans:
 - Service downtime should ideally be zero i.e. service should 99.99999% (7 nines) availability.
 
 ## Open Issues
-There are several requirements to be completed. You can view the full details on the [GitHub issues page](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues). The summary of the requirements is as follows:
+There are some planned tasks to be completed. You can view the full details on the [GitHub issues page](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues). The summary of the pending tasks is as follows:
 
 ### Bugs
 1. **Swagger: `swagger/*any`**
    - **Issue #:** [#10](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/10)
    - **Description:** A bug related to the Swagger library. `/swagger/` does not work and we have to go to `/swagger/index.html` to access swagger.
 
-2. **Incorrect/Misleading Error Message**
-   - **Issue #:** [#8](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/8)
-   - **Description:** A bug regarding error messages. Although, we catch the exception, the error message is misleading.
-
 ### Enhancements
-1. **Error Message Granularization**
-   - **Issue #:** [#15](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/15)
-   - **Description:** Error messages should be more specific to the exact issue instead of having one error message being served to 3 different cases.
-2. **Error Message Internationalization**
-   - **Issue #:** [#14](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/14)
-   - **Description:** Feature request for supporting multiple languages in error messages.
-
-3. **Implement User Authentication**
-   - **Issue #:** [#13](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/13)
-   - **Description:** Adding user authentication feature.
-
-4. **Implement a Rate Limiter**
-   - **Issue #:** [#12](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/12)
-   - **Description:** Implementing a rate limiter feature.
-
-5. **Implement a Load Balancer**
+1. **Create Deployment Scripts** - In Progress `feature/kubernetesIntegration` branch
+   - **Issue #:** [#19](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/19)
+   - **Description:** Create deployment scripts to deploy all the containers in GCP. This will handle handle auto-scaling, load balancing and fault-tolerance.
+2. **Implement a Load Balancer** - In Progress `feature/kubernetesIntegration` branch
    - **Issue #:** [#11](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/11)
    - **Description:** Feature request for a load balancer.
+3. **Error Message Internationalization**
+   - **Issue #:** [#14](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/14)
+   - **Description:** Feature request for supporting multiple languages in error messages.
+4. **Implement User Authentication**
+   - **Issue #:** [#13](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/13)
+   - **Description:** Adding user authentication feature.
+5. **Implement a Rate Limiter**
+   - **Issue #:** [#12](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/12)
+   - **Description:** Implementing a rate limiter feature.
 
 ### Documentation
 1. **Swagger Example: Max Appears Before Min**
@@ -47,12 +40,9 @@ There are several requirements to be completed. You can view the full details on
    - **Description:** Documentation improvement needed for Swagger examples.
 
 ### General
-1. **Incongruent Behaviour between /GET and /POST**
-   - **Issue #:** [#7](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/7)
-   - **Description:** Discrepancy between GET and POST behavior, low priority.
-2. **Code Refactoring**
+1. **Code Refactoring**
     - Move type `AppError` to package `types`. At the moment it resides in package `roman`.
-3. **Middleware Improvements**
+2. **Middleware Improvements**
     - Due to time constraints, the middleware code has not been thoroughly tested. Code quality needs to be improved. 
     - More metrics can be exported for observability.
 

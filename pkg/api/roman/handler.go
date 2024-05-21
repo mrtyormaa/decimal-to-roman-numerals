@@ -140,7 +140,7 @@ func ConvertNumbersToRomanNumerals(numbers []int) []types.RomanNumeral {
 
 // Function to check for duplicate `ranges` keys
 func hasDuplicateRangesKey(data string) error {
-	if strings.Count(data, "ranges") > 1 {
+	if strings.Count(data, "\"ranges\"") > 1 {
 		return NewAppError(CodeInvalidJSONDuplicateKeys)
 	}
 	return nil
@@ -161,51 +161,10 @@ func hasDuplicateRangesKey(data string) error {
 // @Failure 400 {object} types.JsonErrorResponse "Invalid JSON Payload"
 // @Router /convert [post]
 func ConvertRangesToRoman(c *gin.Context) {
-	var payload map[string]interface{}
 
-	// Read the raw request body
-	rawBody, err := io.ReadAll(c.Request.Body)
+	rangesPayload, err := getRangesPayload(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": NewAppError(CodeFailedReadBody).Error()})
-		return
-	}
-
-	// Check for duplicate keys
-	if err := hasDuplicateRangesKey(string(rawBody)); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Return error if we detect query parameters
-	if len(c.Request.URL.Query()) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeQueryParamInPostRequest).Error()})
-		return
-	}
-
-	// Unmarshal the raw body into a map
-	if err := json.Unmarshal(rawBody, &payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRange).Error()})
-		return
-	}
-
-	// Check if the payload contains exactly one key "ranges" and the value is an array
-	rangesData, ok := payload["ranges"].([]interface{})
-	if !ok || len(payload) != 1 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRange).Error()})
-		return
-	}
-
-	// If "ranges" array is empty, return an empty result
-	if len(rangesData) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRange).Error()})
-		return
-	}
-
-	// Parse the "ranges" key into RangesPayload struct
-	var rangesPayload types.RangesPayload
-	rangesDataJSON, _ := json.Marshal(rangesData)
-	if err := json.Unmarshal(rangesDataJSON, &rangesPayload.Ranges); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": NewAppError(CodeInvalidRange).Error()})
 		return
 	}
 
@@ -223,13 +182,71 @@ func ConvertRangesToRoman(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"results": results})
 }
 
+func getRangesPayload(c *gin.Context) (types.RangesPayload, error) {
+	var payload map[string]interface{}
+	var rangesPayload types.RangesPayload
+
+	// Read the raw request body
+	rawBody, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		return rangesPayload, NewAppError(CodeFailedReadBody)
+	}
+
+	// Check for duplicate keys
+	if err := hasDuplicateRangesKey(string(rawBody)); err != nil {
+		return rangesPayload, err
+	}
+
+	// Unmarshal the raw body into a map
+	if err := json.Unmarshal(rawBody, &payload); err != nil {
+		return rangesPayload, NewAppError(CodeInValidJSON)
+	}
+
+	// Return error if we detect query parameters
+	if len(c.Request.URL.Query()) > 0 {
+		return rangesPayload, NewAppError(CodeQueryParamInPostRequest)
+	}
+
+	// Check if the payload contains exactly one key "ranges" and the value is an array
+	rangesData, ok := payload["ranges"].([]interface{})
+	if !ok || len(payload) != 1 || len(rangesData) == 0 {
+		return rangesPayload, NewAppError(CodeInvalidRangeJSON)
+	}
+
+	// Validate each range object
+	for _, item := range rangesData {
+		rangeMap, ok := item.(map[string]interface{})
+		if !ok {
+			return rangesPayload, NewAppError(CodeInvalidRangeJSON)
+		}
+
+		min, minOk := rangeMap["min"].(float64)
+		max, maxOk := rangeMap["max"].(float64)
+		if !minOk || !maxOk {
+			return rangesPayload, NewAppError(CodeInValidRangeMissingMinMax)
+		}
+
+		// Append to the ranges payload
+		rangesPayload.Ranges = append(rangesPayload.Ranges, types.NumberRange{
+			Min: int(min),
+			Max: int(max),
+		})
+	}
+
+	// Return the validated ranges payload (you can modify this part as needed for your use case)
+	return rangesPayload, nil
+}
+
 // ProcessRanges processes the ranges and generates a list of numbers
 func ProcessRanges(payload types.RangesPayload) ([]int, error) {
 	var numbers []int
 
 	for _, r := range payload.Ranges {
-		if r.Min < LowerLimit || r.Max > UpperLimit || r.Min > r.Max {
-			return nil, NewAppError(CodeInvalidRange)
+		if r.Min < LowerLimit || r.Max > UpperLimit {
+			return nil, NewAppError(CodeInvalidRangeBounds)
+		}
+		if r.Min > r.Max {
+			return nil, NewAppError(CodeInvalidRangeMinMoreMax)
 		}
 		for i := r.Min; i <= r.Max; i++ {
 			numbers = append(numbers, i)

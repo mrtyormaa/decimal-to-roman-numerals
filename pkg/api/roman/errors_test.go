@@ -43,11 +43,9 @@ func TestNewAppError(t *testing.T) {
 		},
 		{
 			name:         "InvalidRange",
-			code:         CodeInvalidRange,
-			expectedCode: CodeInvalidRange,
-			expectedMsg: "invalid JSON: JSON must contain only the 'ranges' key, which should be an array of one or more objects with 'min' " +
-				"and 'max' values. 'min' and 'max' values must be within 1 to 3999, and 'min' should not be greater than 'max'. " +
-				"No other keys are allowed.",
+			code:         CodeInvalidRangeJSON,
+			expectedCode: CodeInvalidRangeJSON,
+			expectedMsg:  "invalid JSON: expected 'ranges' key with an array value. Array of 'min' and 'max'. ex. {'ranges': [{'min': 1, 'max': 2}]}",
 		},
 		{
 			name:         "InvalidJSONDuplicateKeys",
@@ -60,6 +58,30 @@ func TestNewAppError(t *testing.T) {
 			code:         CodeQueryParamInPostRequest,
 			expectedCode: CodeQueryParamInPostRequest,
 			expectedMsg:  "invalid request: query parameters not allowed in POST requests",
+		},
+		{
+			name:         "CodeInvalidRangeMinMoreMax",
+			code:         CodeInvalidRangeMinMoreMax,
+			expectedCode: CodeInvalidRangeMinMoreMax,
+			expectedMsg:  "invalid ranges: 'min' should be less than 'max'",
+		},
+		{
+			name:         "CodeInvalidRangeBounds",
+			code:         CodeInvalidRangeBounds,
+			expectedCode: CodeInvalidRangeBounds,
+			expectedMsg:  "invalid ranges: 'min' and 'max' values must be within 1 to 3999",
+		},
+		{
+			name:         "CodeInValidJSON",
+			code:         CodeInValidJSON,
+			expectedCode: CodeInValidJSON,
+			expectedMsg:  "failed to parse JSON",
+		},
+		{
+			name:         "CodeInValidRangeMissingMinMax",
+			code:         CodeInValidRangeMissingMinMax,
+			expectedCode: CodeInValidRangeMissingMinMax,
+			expectedMsg:  "invalid format: each range must have 'min' and 'max' integers",
 		},
 		{
 			name:         "UnknownErrorCode",

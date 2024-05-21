@@ -122,7 +122,7 @@ func getRangesValidTestCases() []struct {
 			},
 		},
 		{
-			name: "OutOfOrderRanges",
+			name: "AscendingOrder",
 			payload: struct {
 				Ranges []struct {
 					Min int `json:"min"`

@@ -26,5 +26,8 @@ CMD ["sh", "-c", "go test ./... -coverprofile=/coverage/coverage.out && go tool 
 FROM golang:1.21.10
 WORKDIR /app
 COPY --from=builder /app/bin/main ./bin/main
-EXPOSE 8001
+# Set environment variable for the port with a default value of 8001
+ENV PORT 8001
+# Make port configurable at runtime with a default fallback
+EXPOSE ${PORT}
 CMD ["./bin/main"]

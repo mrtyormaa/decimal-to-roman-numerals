@@ -4,10 +4,14 @@
 - Functional 
 - Non-Functional
 
-The following assumptions to help in reaching some concrete actionable plans:
+A few assumptions to help us come up with possible solutions are as follows:
 - decimal-to-roman API will be served to about 10M users worldwide.
 - API should have good latency, i.e., the API should respond within 100ms for 95% of requests.
 - Service downtime should ideally be zero i.e. service should 99.99999% (7 nines) availability.
+
+High level architecture diagram is as follows. NOTE: This is subject to changes upon more concrete requirements. For example, there might be a need for SQL database(s) for user data storage. Or API Gateway might not be needed if, we don't want rate limiting and authentication etc.
+
+[![arch.png](https://i.postimg.cc/V6HnXkFc/arch.png)](https://postimg.cc/47VYgZM8)
 
 ## Open Issues
 There are some planned tasks to be completed. You can view the full details on the [GitHub issues page](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues). The summary of the pending tasks is as follows:
@@ -188,7 +192,7 @@ If the API needs to serve users across the globe and also make sure that the ser
 
 - **Semantic Versioning**: This project uses semantic versioning and is automated via integration with GitHub Actions. This workflow is designed to automate the creation of GitHub Releases. It adheres to [Semantic Versioning](https://semver.org/), which is a versioning scheme that uses a three-part version number: `MAJOR.MINOR.PATCH`. This workflow is triggered whenever a commit tag that starts with "v" (e.g., "v1.0.0", "v0.1.4") is pushed to the repository.
 
-## Deployment Strategy
+## 6. Deployment Strategy
 ### Containerization - COMPLETED
 
 - **Docker**: The project uses `Docker` for containerization of the application to ensure consistency across development, testing, and production environments. `Make` is also used to facilitate these steps.

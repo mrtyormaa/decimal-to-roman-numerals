@@ -380,7 +380,7 @@ This workflow is designed to automate the creation of GitHub Releases. It adhere
 
 ### Test and Coverage
 
-This workflow ensures code quality by running tests and collecting coverage data. It is triggered on every push and pull request. The workflow performs the following steps:
+This project uses GitHub actions to automate the tests upon push or pull request to main branch. This workflow ensures code quality by running tests and collecting coverage data. It is triggered on every push and pull request. The workflow performs the following steps:
 
 - **Trigger:** Executes on every push to the repository and on every pull request.
 - **Job Name:** Build
@@ -392,11 +392,7 @@ This workflow ensures code quality by running tests and collecting coverage data
   - **Run Tests and Coverage:** Executes tests with race condition detection and generates a coverage profile.
   - **Upload Coverage:** Uses the `codecov/codecov-action` to upload the coverage report to Codecov, using the Codecov token stored in the repository secrets.
 
+### Deployment - In Progress
+This is currently in progress under `feature/kubernetesIntegration` branch.
 
-## TODOs
 
-- [ ] Authentication!
-- [ ] Rate Limiter!
-- [ ] Load balancer!
-- [ ] AutoScaling!
-- [x] Redis DB support: Caching is not necessary for this project. Won't do.

@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 
 	docs "github.com/mrtyormaa/decimal-to-roman-numerals/docs"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api/roman"
@@ -11,6 +13,24 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+func GetPort() int {
+	// Define the default port
+	defaultPort := 8001
+
+	// Read the port from the environment variable
+	portStr := os.Getenv("PORT")
+	if portStr == "" {
+		portStr = strconv.Itoa(defaultPort)
+	}
+
+	// Convert the port string to an integer
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		port = defaultPort
+	}
+	return port
+}
 
 // InitRouter initializes the Gin router with middleware, routes, and Swagger documentation.
 func InitRouter() *gin.Engine {
@@ -38,10 +58,12 @@ func InitRouter() *gin.Engine {
 	version := "/api/v1"
 	docs.SwaggerInfo.BasePath = version
 
+	port := GetPort()
+
 	// Root endpoint to display message to use API version
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": fmt.Sprintf("Please use the %s endpoint for API access. Visit http://localhost:8001/swagger/index.html", version),
+			"message": fmt.Sprintf("Please use the %s endpoint for API access. Visit http://localhost:%d/swagger/index.html", version, port),
 		})
 	})
 

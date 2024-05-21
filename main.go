@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -25,7 +26,8 @@ func main() {
 
 	r := api.InitRouter()
 
-	if err := r.Run(":8001"); err != nil {
+	port := api.GetPort()
+	if err := r.Run(fmt.Sprintf(":%d", port)); err != nil {
 		log.Fatal(err)
 	}
 }

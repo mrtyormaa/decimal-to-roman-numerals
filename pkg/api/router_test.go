@@ -3,6 +3,7 @@ package api_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -64,4 +65,32 @@ func TestInitRouter(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.Code)
 		// Add assertions based on the expected response for this endpoint
 	})
+}
+
+func TestGetPort(t *testing.T) {
+	// Save the original PORT value and defer restoration
+	originalPort := os.Getenv("PORT")
+	defer os.Setenv("PORT", originalPort)
+
+	tests := []struct {
+		envPort      string
+		expectedPort int
+	}{
+		{"8080", 8080},    // Valid port number
+		{"invalid", 8001}, // Invalid port number
+		{"", 8001},        // No port set, should use default
+	}
+
+	for _, test := range tests {
+		// Set the PORT environment variable
+		os.Setenv("PORT", test.envPort)
+
+		// Get the port using the function
+		port := api.GetPort()
+
+		// Check if the returned port matches the expected port
+		if port != test.expectedPort {
+			t.Errorf("Expected port %d, but got %d", test.expectedPort, port)
+		}
+	}
 }

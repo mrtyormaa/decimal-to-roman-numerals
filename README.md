@@ -63,15 +63,25 @@ decimal-to-roman-numerals/
 
 1. Clone the repository
 
-```bash
-git clone https://github.com/mrtyormaa/decimal-to-roman-numerals
-```
+    ```bash
+    git clone https://github.com/mrtyormaa/decimal-to-roman-numerals
+    ```
 
 2. Navigate to the directory
 
-```bash
-cd decimal-to-roman-numerals
-```
+    ```bash
+    cd decimal-to-roman-numerals
+    ```
+
+3. Set Enviroment Variables (Optional)
+
+Create an `.env` file with following configurations. If this step is not done, the default values will be used as shown below:
+
+    ```
+    PORT=8001
+    GF_SECURITY_ADMIN_USER=admin
+    GF_SECURITY_ADMIN_PASSWORD=admin
+    ```
 
 3. Build and run the Docker containers
 
@@ -228,7 +238,11 @@ To expose various metrics in a Go application, we have provided a `/metrics` HTT
 
 ### 2. Grafana
 
-This project has grafana integration for visualisation of the metrics.
+This project has grafana integration for visualisation of the metrics. If you want to change the default id(admin) and password(admin), create an `.env` file and give values to the following variables:
+```
+GF_SECURITY_ADMIN_USER=
+GF_SECURITY_ADMIN_PASSWORD=
+```
 
 | URL                                  | Description                                       |
 |--------------------------------------|---------------------------------------------------|

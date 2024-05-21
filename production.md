@@ -1,16 +1,16 @@
-# Steps to Make the API Production Ready
+# Steps to Make the decimal-to-roman API Production Ready
 
-We will discuss this in two sections: one focusing on the functional aspects of the API and the other on the non-functional aspects.
+`decimal-to-roman` API converts decimal number ranges to Roman numerals. This document discusses the next steps required to make the API production ready. This has been discussed in two sections:
+- Functional 
+- Non-Functional
 
-We will make the following assumptions to help us reach some concrete actionable plans. The assumptions are as follows:
-- This will be served to about 10M users worldwide.
-- It should have good latency, i.e., the API should respond within 100ms for 95% of requests.
-- Service downtime should ideally be zero.
+The following assumptions to help in reaching some concrete actionable plans:
+- decimal-to-roman API will be served to about 10M users worldwide.
+- API should have good latency, i.e., the API should respond within 100ms for 95% of requests.
+- Service downtime should ideally be zero i.e. service should 99.99999% (7 nines) availability.
 
-Let's begin with the functional requirements.
-
-## Functional Requirements
-There are several actions to be completed. You can view the full details on the [GitHub issues page](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues). The summary of the requirements is as follows:
+## Open Issues
+There are several requirements to be completed. You can view the full details on the [GitHub issues page](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues). The summary of the requirements is as follows:
 
 ### Bugs
 1. **Swagger: `swagger/*any`**
@@ -22,19 +22,22 @@ There are several actions to be completed. You can view the full details on the 
    - **Description:** A bug regarding error messages. Although, we catch the exception, the error message is misleading.
 
 ### Enhancements
-1. **Error Message Internationalization**
+1. **Error Message Granularization**
+   - **Issue #:** [#15](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/15)
+   - **Description:** Error messages should be more specific to the exact issue instead of having one error message being served to 3 different cases.
+2. **Error Message Internationalization**
    - **Issue #:** [#14](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/14)
    - **Description:** Feature request for supporting multiple languages in error messages.
 
-2. **Implement User Authentication**
+3. **Implement User Authentication**
    - **Issue #:** [#13](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/13)
    - **Description:** Adding user authentication feature.
 
-3. **Implement a Rate Limiter**
+4. **Implement a Rate Limiter**
    - **Issue #:** [#12](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/12)
    - **Description:** Implementing a rate limiter feature.
 
-4. **Implement a Load Balancer**
+5. **Implement a Load Balancer**
    - **Issue #:** [#11](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/11)
    - **Description:** Feature request for a load balancer.
 
@@ -50,10 +53,10 @@ There are several actions to be completed. You can view the full details on the 
 2. **Code Refactoring**
     - Move type `AppError` to package `types`. At the moment it resides in package `roman`.
 3. **Middleware Improvements**
-    - Due to time constraints, the middleware code has not been thoroughly tested. We need to improve code quality here. 
+    - Due to time constraints, the middleware code has not been thoroughly tested. Code quality needs to be improved. 
     - More metrics can be exported for observability.
 
-Now to elaborate on different functional aspects and discuss further:
+## Functional Requirements
 
 ## 1. API Endpoints
 
@@ -115,38 +118,38 @@ Below are some approaches to achieve this.
 
 # Non-functional Requirements (Quality Metrics)
 
-## 1. Scalability
+## 1. Scalability - TODO
 
-If we need to serve millions of users, we need to have multiple instances of our container. This can be achieved in the following way.
+If the API needs to serve millions of users, multiple instances of the API container is needed. This can be achieved in the following way.
 
 ### Horizontal Scalability
 
-- **Stateless Services**: Our service is stateless. Hence, we can store state information in a distributed cache (e.g., Redis) or database for high scalability.
-- **Auto-Scaling**: We can use auto-scaling groups (e.g., AWS Auto Scaling, Azure VM Scale Sets, Google Cloud Instance Groups) to automatically adjust the number of running instances based on traffic load.
-    - A `k8s` deployment artifact is present in the `feature/kubernetesIntegration` branch. This is not complete and has not been properly tested. A complete implementation will entail proper configuration of the deployment, service, and the ingress manifests.
+- **Stateless Services**: The API service has been designed to be stateless. Hence, the state information can be stored in a distributed cache (e.g., Redis) or database for high scalability.
+- **Auto-Scaling**: Auto-scaling groups (e.g., AWS Auto Scaling, Azure VM Scale Sets, Google Cloud Instance Groups) can be used to automatically adjust the number of running instances based on traffic load.
+    - A `k8s` deployment artifact is present in the `feature/kubernetesIntegration` branch. This is not complete and has not been properly tested yet. A complete implementation will entail proper configuration of the deployment, service, and the ingress manifests.
 
 ### Load Balancing
 
-- **Load Balancer**: We can deploy a load balancer (e.g., AWS ELB, NGINX, HAProxy) to distribute incoming requests across multiple instances. Ensure it supports health checks to route traffic only to healthy instances.
-    - At the moment, we have partial implementation of this in `feature/kubernetesIntegration` via k8s.
-- **DNS Load Balancing**: We can also use DNS load balancing (e.g., AWS Route 53) to distribute traffic geographically, reducing latency by directing users to the nearest data center.
+- **Load Balancer**: Load balancer (e.g., AWS ELB, NGINX, HAProxy) can be deployed to distribute incoming requests across multiple instances. Ensure it supports health checks to route traffic only to healthy instances.
+    - At the moment, a partial implementation of this is present in `feature/kubernetesIntegration` branch using k8s.
+- **DNS Load Balancing**: DNS load balancing (e.g., AWS Route 53) can be used to distribute traffic geographically, reducing latency by directing users to the nearest data center.
 
-## 2. Performance
-In order to achieve our desired 100ms latency for 95% of requests, we can adopt one or more of the following strategies.
+## 2. Performance - TODO
+In order to achieve the desired 100ms latency for 95% of requests, one or more of the following strategies can be adopted.
 
 ### Low Latency
 
-- **Content Delivery Network (CDN)**: We can use a CDN (e.g., Cloudflare, AWS CloudFront) to cache and serve responses closer to the user's location, reducing latency.
+- **Content Delivery Network (CDN)**: CDN (e.g., Cloudflare, AWS CloudFront) can be used to cache and serve responses closer to the user's location, reducing latency.
 - **Optimized Code**: Profile and optimize the code to reduce execution time. Use asynchronous processing where appropriate to handle concurrent requests efficiently.
-    - We are currently using integration with `codeclimate` for code analysis. The details can be seen [here](https://codeclimate.com/github/mrtyormaa/decimal-to-roman-numerals). But this needs to be improved as well.
+    - The API currently uses integration with `codeclimate` for code analysis. The details can be seen [here](https://codeclimate.com/github/mrtyormaa/decimal-to-roman-numerals). But this needs to be improved as well with various other static code analysis tools.
 
 ### Caching
 
 - **In-Memory Caching**: Implement in-memory caching (e.g., Redis, Memcached) for frequently requested data to reduce database load and improve response times.
 - **HTTP Caching**: Use HTTP caching headers (e.g., ETag, Cache-Control) to enable client-side caching and reduce redundant requests.
 
-## 3. Availability
-If we want to serve users across the globe and also make sure that our services don't suffer downtimes, we can adopt the following strategies.
+## 3. Availability - TODO
+If the API needs to serve users across the globe and also make sure that the services don't suffer downtimes, we can adopt the following strategies.
 
 ### High Availability
 
@@ -156,54 +159,54 @@ If we want to serve users across the globe and also make sure that our services 
 ### Failover Mechanisms
 
 - **Health Checks**: Implement comprehensive health checks for all services to detect and route traffic away from unhealthy instances.
-    - We have implemented a basic `/health` endpoint for this. And we also have integration with Prometheus and Grafana to monitor the services with various metrics. The details of this can be found [here](https://github.com/mrtyormaa/decimal-to-roman-numerals?tab=readme-ov-file#logging-and-monitoring).
-- **Automatic Failover**: We can use cloud provider features to automatically failover to healthy instances or regions in case of failures.
+    - A basic `/health` endpoint has been implemented for this. Integration with Prometheus and Grafana to monitor the services with various metrics has been implemented. The details of this can be found [here](https://github.com/mrtyormaa/decimal-to-roman-numerals?tab=readme-ov-file#logging-and-monitoring).
+- **Automatic Failover**: Use cloud provider features to automatically failover to healthy instances or regions in case of failures.
     - Our implementation of k8s will also cater to this.
 
 ### Redundancy - Not required but discussing this in case the requirements evolve in the future.
 
-- **Redundant Components**: At present we don't have any databases. But when we do, we can ensure all critical components (servers, databases, network paths) have redundant counterparts. We can use RAID configurations for disk redundancy and multi-zone deployment for network redundancy.
+- **Redundant Components**: At present the API does not have any databases. But when necessary, it can be can ensured that all critical components (servers, databases, network paths) have redundant counterparts. RAID configurations for disk redundancy and multi-zone deployment can be used for network redundancy.
 
 ## 4. Reliability - Partially Complete
 
 ### Monitoring and Logging
 
-- **Monitoring Tools**: We use monitoring tools Prometheus and Grafana to track metrics such as response times, error rates, and system resource usage.
-- **Centralized Logging**: This is not done. We should implement centralized logging using tools like ELK stack (Elasticsearch, Logstash, Kibana) or Splunk to collect, aggregate, and analyze logs for troubleshooting and auditing.
-    - We already have machine-readable error codes implemented. For example, `[ERR1001] Invalid JSON`.
+- **Monitoring Tools** (COMPLETE): `Prometheus` and `Grafana` are used to track metrics such as response times, error rates, and system resource usage.
+- **Centralized Logging** (TODO): Centralized logging using tools like ELK stack (Elasticsearch, Logstash, Kibana) or Splunk  should be implemented to collect, aggregate, and analyze logs for troubleshooting and auditing.
+    - Machine-readable error codes have been implemented. For example, `[ERR1001] Invalid JSON`. 
 
-### Automated Recovery
+### Automated Recovery - In Progress
 
-- **Self-Healing Infrastructure**: We can use tools like Kubernetes to automatically restart failed containers. Configure cloud provider auto-recovery features to restart failed VMs.
+- **Self-Healing Infrastructure**: `Kubernetes` can be used to automatically restart failed containers. Configure cloud provider auto-recovery features to restart failed VMs.
     - In progress in `feature/kubernetesIntegration`.
-- **Incident Response**: We should also set up automated alerting for immediate notification and response to incidents.
+- **Incident Response**: Automated alerting for immediate notification and response to incidents should be setup
 
 ## 5. Maintainability - COMPLETED
 
 ### Code Quality
 
-- **Code Reviews**: Our project uses Pull Requests to ensure high code quality and adherence to standards.
+- **Code Reviews**: This project uses Pull Requests to ensure high code quality and adherence to standards.
 - **Coding Standards**: This is ensured by integration with `codecov`, `codeclimate`, and `go-report`. The links and badges can be found in the README file as well.  [![codecov](https://codecov.io/github/mrtyormaa/decimal-to-roman-numerals/graph/badge.svg?token=WCPsoNnQEy)](https://codecov.io/github/mrtyormaa/decimal-to-roman-numerals)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mrtyormaa/decimal-to-roman-numerals)](https://goreportcard.com/report/github.com/mrtyormaa/decimal-to-roman-numerals)
 [![Maintainability](https://api.codeclimate.com/v1/badges/dfbf91b073b8fec1f6bf/maintainability)](https://codeclimate.com/github/mrtyormaa/decimal-to-roman-numerals/maintainability).
 
 ### Automated Testing
 
-- **CI/CD Pipelines**: We use GitHub Actions to automatically run tests on code changes and deploy to production only when all tests pass. [![Test and coverage](https://github.com/mrtyormaa/decimal-to-roman-numerals/actions/workflows/ci.yml/badge.svg)](https://github.com/mrtyormaa/decimal-to-roman-numerals/actions/workflows/ci.yml).
+- **CI/CD Pipelines**: This project uses GitHub Actions to automatically run tests on code changes and deploy to production only when all tests pass. [![Test and coverage](https://github.com/mrtyormaa/decimal-to-roman-numerals/actions/workflows/ci.yml/badge.svg)](https://github.com/mrtyormaa/decimal-to-roman-numerals/actions/workflows/ci.yml).
 
 ### Versioning
 
-- **Semantic Versioning**: We use semantic versioning and we have integrated this with GitHub Actions as well.
-This workflow is designed to automate the creation of GitHub Releases. It adheres to [Semantic Versioning](https://semver.org/), which is a versioning scheme that uses a three-part version number: `MAJOR.MINOR.PATCH`. This workflow is triggered whenever a commit tag that starts with "v" (e.g., "v1.0.0", "v0.1.4") is pushed to the repository.
+- **Semantic Versioning**: This project uses semantic versioning and is automated via integration with GitHub Actions. This workflow is designed to automate the creation of GitHub Releases. It adheres to [Semantic Versioning](https://semver.org/), which is a versioning scheme that uses a three-part version number: `MAJOR.MINOR.PATCH`. This workflow is triggered whenever a commit tag that starts with "v" (e.g., "v1.0.0", "v0.1.4") is pushed to the repository.
 
 ## Deployment Strategy
-
-### Infrastructure
-
-- **Cloud Provider**: We can choose a cloud provider that offers global reach and robust infrastructure like AWS, Google Cloud, Azure.
-- **Infrastructure as Code (IaC)**: We can use IaC tools like Terraform, AWS CloudFormation to automate the deployment.
-
 ### Containerization - COMPLETED
 
-- **Docker**: We have containerized the application using Docker to ensure consistency across development, testing, and production environments. We also use Make to facilitate these steps.
+- **Docker**: The project uses `Docker` for containerization of the application to ensure consistency across development, testing, and production environments. `Make` is also used to facilitate these steps.
 - **Kubernetes**: We are using Kubernetes for orchestration to manage and scale containerized applications. This is still under progress as of writing this document.
+
+### Infrastructure - TODO
+
+- **Cloud Provider**: API can be deployed via Cloud providers that offers global reach and robust infrastructure like AWS, Google Cloud, Azure.
+- **Infrastructure as Code (IaC)**: IaC tools like Terraform, Ansible, chef; Puppet can be to automate the deployment.
+
+

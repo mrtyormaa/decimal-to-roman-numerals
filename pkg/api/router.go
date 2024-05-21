@@ -41,7 +41,7 @@ func InitRouter() *gin.Engine {
 	// Root endpoint to display message to use API version
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": fmt.Sprintf("Please use the %s endpoint for API access.", version),
+			"message": fmt.Sprintf("Please use the %s endpoint for API access. Visit http://localhost:8001/swagger/index.html", version),
 		})
 	})
 

@@ -14,6 +14,8 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// Get the port as set via environment variable
+// If it has not been set, default to 8001
 func GetPort() int {
 	// Define the default port
 	defaultPort := 8001

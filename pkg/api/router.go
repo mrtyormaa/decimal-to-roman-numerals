@@ -1,9 +1,7 @@
 package api
 
 import (
-	"fmt"
-	"os"
-	"strconv"
+	"net/http"
 
 	docs "github.com/mrtyormaa/decimal-to-roman-numerals/docs"
 	"github.com/mrtyormaa/decimal-to-roman-numerals/pkg/api/roman"
@@ -13,26 +11,6 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
-
-// Get the port as set via environment variable
-// If it has not been set, default to 8001
-func GetPort() int {
-	// Define the default port
-	defaultPort := 8001
-
-	// Read the port from the environment variable
-	portStr := os.Getenv("PORT")
-	if portStr == "" {
-		portStr = strconv.Itoa(defaultPort)
-	}
-
-	// Convert the port string to an integer
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		port = defaultPort
-	}
-	return port
-}
 
 // InitRouter initializes the Gin router with middleware, routes, and Swagger documentation.
 func InitRouter() *gin.Engine {
@@ -60,13 +38,9 @@ func InitRouter() *gin.Engine {
 	version := "/api/v1"
 	docs.SwaggerInfo.BasePath = version
 
-	port := GetPort()
-
 	// Root endpoint to display message to use API version
 	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": fmt.Sprintf("Please use the %s endpoint for API access. Visit http://localhost:%d/swagger/index.html", version, port),
-		})
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
 	})
 
 	// Healthcheck endpoint at the root level

@@ -7,7 +7,7 @@
 
 ## Overview
 
-This repository provides an API endpoint to convert decimal number ranges to Roman numerals.
+This repository provides an API endpoint to convert decimal number ranges to Roman numerals. The next steps/thoughts to take the project to production can be found at [production.md](./production.md).
 
 **TL;DR to Run and See Results**
 
@@ -47,7 +47,9 @@ decimal-to-roman-numerals/
 |-- main.go                     # The entry point of the application
 |-- README.md                   # Project overview and instructions
 |-- Makefile                    # Makefile for building, testing, and running the application
-```
+``` 
+[![uml-class-diagram.png](https://i.postimg.cc/76CzGSjD/uml-class-diagram.png)](https://postimg.cc/bDhr4SzF)
+
 ## Getting Started
 
 ### Prerequisites
@@ -72,6 +74,8 @@ cd decimal-to-roman-numerals
 ```
 
 3. Build and run the Docker containers
+
+This setup defines a multi-stage build process in the Dockerfile, ensuring separation of concerns during the `build`, `testing`, `coverage`, and final application stages. The `docker-compose.yml` file integrates `Prometheus` and `Grafana` as optional dependencies, allowing you to monitor your application effectively.
 
 To run the project localy, use `make setup` to install swag and all other necessary dependencies. Use `go run main.go` to run the application. This will run the decimal-to-roman-numerals. To run all the containers, i.e. the application, prometheus and grafana use the command `make up`.
 

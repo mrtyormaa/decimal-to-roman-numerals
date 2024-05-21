@@ -15,11 +15,11 @@ There are several actions to be completed. You can view the full details on the 
 ### Bugs
 1. **Swagger: `swagger/*any`**
    - **Issue #:** [#10](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/10)
-   - **Description:** A bug related to the Swagger implementation.
+   - **Description:** A bug related to the Swagger library. `/swagger/` does not work and we have to go to `/swagger/index.html` to access swagger.
 
 2. **Incorrect/Misleading Error Message**
    - **Issue #:** [#8](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/8)
-   - **Description:** A bug regarding error messages.
+   - **Description:** A bug regarding error messages. Although, we catch the exception, the error message is misleading.
 
 ### Enhancements
 1. **Error Message Internationalization**
@@ -47,6 +47,11 @@ There are several actions to be completed. You can view the full details on the 
 1. **Incongruent Behaviour between /GET and /POST**
    - **Issue #:** [#7](https://github.com/mrtyormaa/decimal-to-roman-numerals/issues/7)
    - **Description:** Discrepancy between GET and POST behavior, low priority.
+2. **Code Refactoring**
+    - Move type `AppError` to package `types`. At the moment it resides in package `roman`.
+3. **Middleware Improvements**
+    - Due to time constraints, the middleware code has not been thoroughly tested. We need to improve code quality here. 
+    - More metrics can be exported for observability.
 
 Now to elaborate on different functional aspects and discuss further:
 
@@ -74,7 +79,7 @@ Please find the details [here](https://github.com/mrtyormaa/decimal-to-roman-num
 
 - Implement rate limiting to prevent abuse and ensure fair usage among users.
 - Define rate limits per user/IP, e.g., 100 requests per minute.
-    - We can do this by implementing it via libraries provided by Go.
+    - We can do this by implementing it via libraries provided by Go. `golang.org/x/time/rate`
     - This can also be done via services like Cloudflare, Amazon API Gateway, etc.
 
 ## 4. API Documentation - COMPLETED
@@ -88,14 +93,14 @@ Please find the details [here](https://github.com/mrtyormaa/decimal-to-roman-num
 
 - Support multiple languages in error messages and documentation to cater to a global audience.
 - The documentation and the error messages should be translated.
-    - This can be achieved by various libraries. There is no standard library by Go, but there are many open-source alternatives.
+    - This can be achieved by various libraries. There is no standard library by Go, but there are many open-source alternatives. `github.com/nicksnyder/go-i18n/v2/i18n`
 
 ## 6. Security - TODO
-This is not a requirement, but it can be useful if we want to make the service accessible via authorization for monetization.
+Authentication is not a requirement, but it can be useful if we want to make the service accessible via authorization for monetization.
 - Implement HTTPS to encrypt data in transit.
 - Use API keys or OAuth for authentication to restrict access to authorized users.
-- Protect against common web vulnerabilities (e.g., SQL injection, XSS) using security best practices and frameworks.
-    - The project tries to have a very naive implementation for these. It is not enough for production quality. We should use standard frameworks for this.
+- Protect against common web vulnerabilities (e.g., SQL injection, XSS) using security best practices and frameworks. SQL injection is not an issue for the project at the moment, as we don't have any sql databases. But this might change in the future.
+    - The project tries to have a very naive implementation to handle XSS. It is not enough for production quality. We need to test this more and we should use standard frameworks for this, if possible.
 
 Below are some approaches to achieve this.
 | **Strategy**             | **Description**                                            | **Libraries/Tools**                                                 |
